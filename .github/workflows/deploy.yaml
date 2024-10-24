@@ -32,7 +32,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           docker build -t hoangdv99/jax-api:$TAG -f ./deploy/api/Dockerfile .
-          docker build -t hoangdv99/jax-app:$TAG -f ./deploy/app/Dockerfile .
+          docker build -t hoangdv99/jax-app:$TAG -f ./deploy/app/Dockerfile ./web
           docker push hoangdv99/jax-api:$TAG
           docker push hoangdv99/jax-app:$TAG
 
