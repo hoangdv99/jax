@@ -1,6 +1,5 @@
 .vscode/
 .idea/
 .env
-go.sum
 bin/
 tmp/
