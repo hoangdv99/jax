@@ -43,4 +43,3 @@ jobs:
           docker pull hoangdv99/jax-app:$TAG
           docker-compose -f docker-compose.yml down
           docker-compose -f docker-compose.yml up -d
-EOF
