@@ -1,0 +1,52 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+main
+
+# Output folders
+/bin
+/build
+
+# Vendor dependencies (unless you are using vendoring)
+vendor/
+
+# Test data
+*_test.go
+test/
+tests/
+
+# Configuration files, if not needed in production
+*.env
+.env.*
+
+# IDE/editor configurations
+.vscode/
+.idea/
+*.sublime*
+*.swp
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Git files
+.git
+.gitignore
+.gitattributes
+
+# Logs
+*.log
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.old
+
+# Other specific files
+web
+docs
+README.md
+.air.toml
