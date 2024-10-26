@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"expvar"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -13,17 +12,24 @@ import (
 	"syscall"
 	"time"
 
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 	"jax.hoangdv99/internal/jsonlog"
 )
 
 var (
-	version   string
-	buildTime string
+	version string
 )
 
 type config struct {
 	port int
 	env  string
+	db   struct {
+		dsn          string
+		maxOpenConns int
+		maxIdleConns int
+		maxIdleTime  string
+	}
 }
 
 type application struct {
@@ -33,34 +39,34 @@ type application struct {
 }
 
 func main() {
-	var cfg config
-
-	flag.IntVar(&cfg.port, "port", 4000, "API server port")
-	flag.StringVar(&cfg.env, "env", "development", "Environment (development|production)")
-
-	displayVersion := flag.Bool("version", false, "Display version and exit")
-
-	flag.Parse()
-
-	if *displayVersion {
-		fmt.Printf("Version:\t%s\n", version)
-		fmt.Printf("Build time:\t%s\n", buildTime)
-		os.Exit(0)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
+	err := godotenv.Load()
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
 
-	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
-
-	expvar.NewString("version").Set(version)
-	expvar.Publish("timestamp", expvar.Func(func() interface{} {
-		return time.Now().Unix()
-	}))
+	var cfg config
+	cfg.port = getEnvAsInt("PORT", 4000)
+	cfg.env = getEnv("ENVIRONMENT", "development")
+	cfg.db.dsn = fmt.Sprintf("%s:%s@/%s?parseTime=true", os.Getenv("MYSQL_USERNAME"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_DATABASE"))
+	cfg.db.maxOpenConns = getEnvAsInt("DB_MAX_OPEN_CONNS", 25)
+	cfg.db.maxIdleConns = getEnvAsInt("DB_MAX_IDLE_CONNS", 25)
+	cfg.db.maxIdleTime = getEnv("DB_MAX_IDLE_TIME", "15m")
 
 	app := &application{
 		config: cfg,
 		logger: logger,
 	}
 
-	err := app.serve()
+	db, err := openDB(cfg)
+	if err != nil {
+		logger.PrintFatal(err, nil)
+	}
+	defer db.Close()
+
+	logger.PrintInfo("database connection pool established", nil)
+
+	err = app.serve()
 	if err != nil {
 		logger.PrintFatal(err, nil)
 	}
@@ -120,4 +126,30 @@ func (app *application) serve() error {
 	})
 
 	return nil
+}
+
+func openDB(cfg config) (*sql.DB, error) {
+	db, err := sql.Open("mysql", cfg.db.dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	db.SetMaxOpenConns(cfg.db.maxOpenConns)
+	db.SetMaxIdleConns(cfg.db.maxIdleConns)
+
+	duration, err := time.ParseDuration(cfg.db.maxIdleTime)
+	if err != nil {
+		return nil, err
+	}
+	db.SetConnMaxIdleTime(duration)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err = db.PingContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }

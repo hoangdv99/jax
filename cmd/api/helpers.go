@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 )
 
@@ -85,4 +87,19 @@ func (app *application) background(fn func()) {
 		}()
 		fn()
 	}()
+}
+
+func getEnv(key string, defaultValue string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
+	}
+	return defaultValue
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	valueStr := os.Getenv(key)
+	if value, err := strconv.Atoi(valueStr); err == nil {
+		return value
+	}
+	return defaultValue
 }
