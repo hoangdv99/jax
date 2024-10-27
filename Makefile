@@ -19,6 +19,12 @@ help:
 run/api:
 	go run ./cmd/api
 
+## db/migrations/up: apply all up database migrations
+.PHONY: db/migrations/up
+db/migrations/up:
+	@echo 'Running up migration...'
+	migrate -path ./migrations -database="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}" up
+
 # ==================================================================================== # 
 # QUALITY CONTROL
 # ==================================================================================== #
