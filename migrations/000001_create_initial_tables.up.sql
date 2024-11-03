@@ -16,12 +16,13 @@ USE `jax` ;
 -- Table `jax`.`users`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jax`.`users` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `uid` VARCHAR(255) NULL,
   `username` VARCHAR(50) NULL DEFAULT NULL,
   `email` VARCHAR(255) NOT NULL,
   `hashed_password` VARCHAR(255) NULL,
   `role` VARCHAR(10) NOT NULL DEFAULT 'user' COMMENT 'user | admin | supervisor',
-  `status` INT NOT NULL COMMENT '-1: firestore users backup\n0: inactive\n10: waiting\n999: active',
+  `status` INT NOT NULL COMMENT '-10: firestore user\n0: inactive\n10: waiting\n999: active',
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
   PRIMARY KEY (`id`),
@@ -33,13 +34,15 @@ ENGINE = InnoDB;
 -- Table `jax`.`stores`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jax`.`stores` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `ref_id` VARCHAR(255) NULL COMMENT 'Firestore ref ID',
   `url` VARCHAR(255) NOT NULL,
   `platform` VARCHAR(45) NOT NULL COMMENT '‘woocommerce’ | ‘shopify’ | ‘shopbase’',
   `is_active` TINYINT(1) NOT NULL DEFAULT 1,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
-  PRIMARY KEY (`id`))
+  PRIMARY KEY (`id`),
+  UNIQUE INDEX `url_UNIQUE` (`url` ASC) VISIBLE)
 ENGINE = InnoDB;
 
 
@@ -71,7 +74,8 @@ ENGINE = InnoDB;
 -- Table `jax`.`tags`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `jax`.`tags` (
-  `id` INT NOT NULL,
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `ref_id` VARCHAR(255) NULL COMMENT 'Firestore ref ID',
   `name` VARCHAR(45) NOT NULL,
   `created_at` DATETIME NOT NULL,
   `updated_at` DATETIME NOT NULL,
@@ -125,6 +129,26 @@ CREATE TABLE IF NOT EXISTS `jax`.`tokens` (
   CONSTRAINT `fk_tokens_users`
     FOREIGN KEY (`user_id`)
     REFERENCES `jax`.`users` (`id`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `jax`.`blacklist`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `jax`.`blacklist` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `store_id` INT NOT NULL,
+  `added_by` VARCHAR(255) NOT NULL,
+  `scope` VARCHAR(45) NOT NULL,
+  `created_at` DATETIME NOT NULL,
+  `edited_at` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  INDEX `fk_blacklist_stores1_idx` (`store_id` ASC) VISIBLE,
+  CONSTRAINT `fk_blacklist_stores1`
+    FOREIGN KEY (`store_id`)
+    REFERENCES `jax`.`stores` (`id`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
