@@ -14,6 +14,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/jsonlog"
 )
 
@@ -35,6 +36,7 @@ type config struct {
 type application struct {
 	config config
 	logger *jsonlog.Logger
+	models data.Models
 	wg     sync.WaitGroup
 }
 
@@ -53,11 +55,6 @@ func main() {
 	cfg.db.maxIdleConns = getEnvAsInt("DB_MAX_IDLE_CONNS", 25)
 	cfg.db.maxIdleTime = getEnv("DB_MAX_IDLE_TIME", "15m")
 
-	app := &application{
-		config: cfg,
-		logger: logger,
-	}
-
 	db, err := openDB(cfg)
 	if err != nil {
 		logger.PrintFatal(err, nil)
@@ -65,6 +62,12 @@ func main() {
 	defer db.Close()
 
 	logger.PrintInfo("database connection pool established", nil)
+
+	app := &application{
+		config: cfg,
+		logger: logger,
+		models: data.NewModels(db),
+	}
 
 	err = app.serve()
 	if err != nil {
