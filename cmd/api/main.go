@@ -16,6 +16,7 @@ import (
 	"github.com/joho/godotenv"
 	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/jsonlog"
+	"jax.hoangdv99/internal/mailer"
 )
 
 var (
@@ -31,6 +32,13 @@ type config struct {
 		maxIdleConns int
 		maxIdleTime  string
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type application struct {
@@ -38,6 +46,7 @@ type application struct {
 	logger *jsonlog.Logger
 	models data.Models
 	wg     sync.WaitGroup
+	mailer mailer.Mailer
 }
 
 func main() {
@@ -55,6 +64,12 @@ func main() {
 	cfg.db.maxIdleConns = getEnvAsInt("DB_MAX_IDLE_CONNS", 25)
 	cfg.db.maxIdleTime = getEnv("DB_MAX_IDLE_TIME", "15m")
 
+	cfg.smtp.host = getEnv("SMTP_HOST", "")
+	cfg.smtp.port = getEnvAsInt("SMTP_PORT", 2525)
+	cfg.smtp.username = getEnv("SMTP_USERNAME", "")
+	cfg.smtp.password = getEnv("SMTP_PASSWORD", "")
+	cfg.smtp.sender = getEnv("SMTP_SENDER", "")
+
 	db, err := openDB(cfg)
 	if err != nil {
 		logger.PrintFatal(err, nil)
@@ -67,6 +82,7 @@ func main() {
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
+		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	err = app.serve()
