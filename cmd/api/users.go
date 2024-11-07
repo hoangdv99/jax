@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 
 	"jax.hoangdv99/internal/constant"
 	"jax.hoangdv99/internal/data"
@@ -46,8 +47,17 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	token, err := app.models.Tokens.New(id, 3*24*time.Hour, data.ScopeActivation)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 	app.background(func() {
-		err = app.mailer.Send(user.Email, "user_registration.html", user)
+		data := map[string]interface{}{
+			"activationToken": token.Plaintext,
+		}
+		err = app.mailer.Send(user.Email, "user_registration.html", data)
 		if err != nil {
 			app.logger.PrintError(err, nil)
 		}

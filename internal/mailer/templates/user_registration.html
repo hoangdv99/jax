@@ -3,6 +3,8 @@
 {{define "plainBody"}}
 Hi,
 Thanks to signing up for a Gnspy account.
+This is one-time activation token and it will expiry in 3 days:
+{{.activationToken}}
 {{end}}
 
 {{define "htmlBody"}}
@@ -14,6 +16,8 @@ Thanks to signing up for a Gnspy account.
   <body>
     <p>Hi,</p>
     <p>Thanks to signing up for a Gnspy account.</p>
+    <p>This is one-time activation token and it will expiry in 3 days: </p>
+    <pre><code>{{.activationToken}}</code></pre>
   </body>
 </html>
 {{end}}
