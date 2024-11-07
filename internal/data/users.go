@@ -102,3 +102,34 @@ func (m UserModel) Insert(user *User) (int64, error) {
 
 	return id, nil
 }
+
+func (m UserModel) GetByEmail(email string) (*User, error) {
+	query := `
+		SELECT id, email, hashed_password, role, status
+		FROM users
+		WHERE email = ?;
+	`
+	var user User
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, email).Scan(
+		&user.Id,
+		&user.Email,
+		&user.Password.hash,
+		&user.Role,
+		&user.Status,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
