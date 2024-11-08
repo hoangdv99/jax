@@ -19,7 +19,8 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
 	router.HandlerFunc(http.MethodPut, "/v1/users/activation", app.activateUserHandler)
 
-	router.HandlerFunc(http.MethodPost, "/v1/tokens/activation", app.createActivationToken)
+	router.HandlerFunc(http.MethodPost, "/v1/tokens/activation", app.createActivationTokenHandler)
+	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.createAuthenticationTokenHandler)
 
-	return app.recoverPanic(router)
+	return app.recoverPanic(app.authenticate(router))
 }
