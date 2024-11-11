@@ -13,8 +13,8 @@ import (
 
 type User struct {
 	Id       int64    `json:"id"`
-	Uid      string   `json:"uid"`
-	Username string   `json:"username"`
+	Uid      string   `json:"-"`
+	Username string   `json:"-"`
 	Email    string   `json:"email"`
 	Password password `json:"-"`
 	Role     string   `json:"-"`
@@ -192,4 +192,30 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 	}
 
 	return &user, nil
+}
+
+func (m UserModel) List() ([]User, error) {
+	query := `
+		SELECT id, email, role, status
+		FROM users;
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	var users []User
+	for rows.Next() {
+		var user User
+		err := rows.Scan(&user.Id, &user.Email, &user.Role, &user.Status)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
 }
