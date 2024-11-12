@@ -13,3 +13,33 @@ const (
 	USER_STATUS_WAITING_APPROVAL   int = 10 // waiting admin's approval
 	USER_STATUS_ACTIVE             int = 999
 )
+
+type Platform struct {
+	Type       string
+	ProductUrl string
+	LimitKey   string
+	PageKey    string
+}
+
+var WOOCOMMERCE = Platform{
+	Type:       "woocommerce",
+	ProductUrl: "/wp-json/wp/v2/product",
+	LimitKey:   "per_page",
+	PageKey:    "page",
+}
+
+var SHOPIFY = Platform{
+	Type:       "shopify",
+	ProductUrl: "/products.json",
+	LimitKey:   "limit",
+	PageKey:    "page",
+}
+
+var SHOPBASE = Platform{
+	Type:       "shopbase",
+	ProductUrl: "/api/catalog/next/products.json",
+	LimitKey:   "limit",
+	PageKey:    "page",
+}
+
+var LIST_PLATFORM = []Platform{WOOCOMMERCE, SHOPIFY, SHOPBASE}
