@@ -117,6 +117,7 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 	token, err := app.models.Tokens.New(user.Id, 365*24*time.Hour, data.ScopeAuthentication)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
+		return
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelop{"authentication_token": token}, nil)
