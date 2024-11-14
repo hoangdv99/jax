@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"jax.hoangdv99/internal/constant"
 	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/validator"
 )
@@ -59,6 +60,23 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		}
 
 		r = app.contextSetUser(r, user)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := app.contextGetUser(r)
+		if user.IsAnonymous() {
+			app.authenticationRequiredResponse(w, r)
+			return
+		}
+
+		if user.Status != constant.USER_STATUS_ACTIVE {
+			app.inactiveAccountResponse(w, r)
+			return
+		}
+
 		next.ServeHTTP(w, r)
 	})
 }
