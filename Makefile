@@ -25,6 +25,12 @@ db/migrations/up:
 	@echo 'Running up migration...'
 	migrate -path ./migrations -database="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}" up
 
+## db/migrations/down: rollback the most recent migration
+.PHONY: db/migrations/down
+db/migrations/down:
+	@echo 'Rollback the most migration...'
+	migrate -path ./migrations -database="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}" down 1
+
 # ==================================================================================== # 
 # QUALITY CONTROL
 # ==================================================================================== #
