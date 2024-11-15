@@ -26,14 +26,17 @@
         <div class="forgot">
           <span class="button">Forgot password?</span>
         </div>
-        <Button label="Sign In" />
+        <Button label="Sign In" @click="login" />
       </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
+import { useAccountStore } from '@/stores/account'
 import { InputText, Button } from 'primevue'
 import { ref } from 'vue'
+
+const accountStore = useAccountStore()
 
 defineOptions({
   name: 'LoginPage',
@@ -41,6 +44,10 @@ defineOptions({
 
 const email = ref('')
 const password = ref('')
+
+function login() {
+  accountStore.login({ email: email.value, password: password.value })
+}
 </script>
 <style lang="scss" scoped>
 .login-page {
