@@ -25,5 +25,9 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
 
-	return app.recoverPanic((app.authenticate(app.enableCORS(router))))
+	router.HandlerFunc(http.MethodPost, "/v1/tags", app.requireActivatedUser(app.createTagHandler))
+	router.HandlerFunc(http.MethodGet, "/v1/tags", app.requireActivatedUser(app.getTagsHandler))
+	router.HandlerFunc(http.MethodPatch, "/v1/tags/:id", app.requireActivatedUser(app.editTagHandler))
+
+	return app.recoverPanic(app.authenticate(app.enableCORS(router)))
 }
