@@ -7,7 +7,6 @@ import router from './router'
 import PrimeVue from 'primevue/config'
 import Aura from '@primevue/themes/aura'
 import ToastService from 'primevue/toastservice'
-import VeeValidate from 'vee-validate'
 
 import '@/assets/styles.scss'
 
@@ -21,6 +20,5 @@ app.use(PrimeVue, {
   },
 })
 app.use(ToastService)
-app.use(VeeValidate)
 
 app.mount('#app')
