@@ -44,7 +44,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	id, err := app.models.Users.Insert(user)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		switch {
+		case errors.Is(err, data.ErrDuplicateEmail):
+			app.badRequestResponse(w, r, err)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
 		return
 	}
 

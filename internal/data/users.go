@@ -7,6 +7,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/go-sql-driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"jax.hoangdv99/internal/validator"
 )
@@ -27,7 +28,7 @@ type password struct {
 }
 
 var (
-	ErrDuplicateEmail = errors.New("duplicate email")
+	ErrDuplicateEmail = errors.New("email existed")
 )
 
 type UserModel struct {
@@ -99,6 +100,9 @@ func (m UserModel) Insert(user *User) (int64, error) {
 
 	result, err := m.DB.ExecContext(ctx, query, args...)
 	if err != nil {
+		if mysqlErr, ok := err.(*mysql.MySQLError); ok && mysqlErr.Number == 1062 {
+			return -1, ErrDuplicateEmail
+		}
 		return -1, err
 	}
 
