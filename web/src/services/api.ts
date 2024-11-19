@@ -19,9 +19,9 @@ export const api = async (
       ...res,
       success: true,
     }
-  } catch (err) {
+  } catch (err: any) {
     return {
-      data: err,
+      message: err.response?.data?.error,
       success: false,
     }
   }
