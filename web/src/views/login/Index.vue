@@ -23,8 +23,15 @@
           class="input"
         />
 
-        <div class="forgot">
-          <span class="button">Forgot password?</span>
+        <div class="wrapper">
+          <div class="register">
+            <span class="button" @click="$router.push('/signup')"
+              >Create new account</span
+            >
+          </div>
+          <div class="forgot">
+            <span class="button">Forgot password?</span>
+          </div>
         </div>
         <Button label="Sign In" />
       </div>
@@ -82,13 +89,14 @@ const password = ref('')
   > .input {
     width: 30rem;
   }
-  > .forgot {
+  > .wrapper {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     margin-top: 1rem;
     margin-bottom: 2rem;
   }
-  > .forgot > .button {
+  > .wrapper > .register > .button,
+  > .wrapper > .forgot > .button {
     color: #10b981;
     cursor: pointer;
   }

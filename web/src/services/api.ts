@@ -1,3 +1,4 @@
+import { useAppStore } from '@/stores/app'
 import axios, { type AxiosResponse } from 'axios'
 
 export interface ApiResponse<T = any> extends AxiosResponse<T> {
@@ -26,3 +27,29 @@ export const api = async (
     }
   }
 }
+
+instance.interceptors.request.use(
+  config => {
+    const appStore = useAppStore()
+    appStore.showLoading()
+    return config
+  },
+  error => {
+    const appStore = useAppStore()
+    appStore.hideLoading()
+    return Promise.reject(error)
+  }
+)
+
+instance.interceptors.response.use(
+  response => {
+    const appStore = useAppStore()
+    appStore.hideLoading()
+    return response
+  },
+  error => {
+    const appStore = useAppStore()
+    appStore.hideLoading()
+    return Promise.reject(error)
+  }
+)
