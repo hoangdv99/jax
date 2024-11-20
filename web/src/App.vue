@@ -2,10 +2,12 @@
   <div v-if="appStore.isLoading" class="spinner-overlay">
     <ProgressSpinner strokeWidth="4" />
   </div>
+  <Toast />
   <RouterView />
 </template>
 <script lang="ts" setup>
 import ProgressSpinner from 'primevue/progressspinner'
+import { Toast } from 'primevue'
 import { useAppStore } from './stores/app'
 
 const appStore = useAppStore()
