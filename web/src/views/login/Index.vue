@@ -5,6 +5,9 @@
         <div class="logo">
           <img src="/images/logoG.png" alt="" class="image" />
         </div>
+        <Message v-if="!!errorMessage" severity="error" class="message">{{
+          errorMessage
+        }}</Message>
         <label for="email" class="label">Email</label>
         <InputText
           v-model="email"
@@ -33,21 +36,48 @@
             <span class="button">Forgot password?</span>
           </div>
         </div>
-        <Button label="Sign In" />
+        <Button
+          :disabled="!email || !password"
+          label="Sign In"
+          @click="signin"
+        />
       </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
-import { InputText, Button } from 'primevue'
+import router from '@/router'
+import { useAccountStore } from '@/stores/account'
+import { InputText, Button, Message } from 'primevue'
 import { ref } from 'vue'
 
 defineOptions({
   name: 'LoginPage',
 })
 
+const accountStore = useAccountStore()
+
 const email = ref('')
 const password = ref('')
+const errorMessage = ref('')
+
+async function signin() {
+  const res = await accountStore.signin({
+    email: email.value,
+    password: password.value,
+  })
+  if (!res.success) {
+    errorMessage.value = 'invalid email or password'
+    return
+  } else {
+    localStorage.setItem('authToken', res.data.authentication_token.token)
+    localStorage.setItem(
+      'authTokenExpiry',
+      res.data.authentication_token.expiry
+    )
+    router.push({ name: 'HomePage' })
+  }
+}
 </script>
 <style lang="scss" scoped>
 .login-page {
@@ -75,18 +105,22 @@ const password = ref('')
   > .logo {
     display: flex;
     justify-content: center;
+    margin-bottom: 1.5rem;
   }
   > .logo > .image {
     width: 4rem;
   }
+  > .message {
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+  }
   > .label {
-    margin-top: 2rem;
     margin-bottom: 0.2rem;
     font-weight: 500;
-    font-size: 1.25rem;
     color: #0f172a;
   }
   > .input {
+    margin-bottom: 1.5rem;
     width: 30rem;
   }
   > .wrapper {
