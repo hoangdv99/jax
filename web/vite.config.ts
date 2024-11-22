@@ -17,5 +17,12 @@ export default defineConfig(({ mode }) => {
     server: {
       port: parseInt(env.VITE_PORT, 10) || 3000,
     },
+    css: {
+      preprocessorOptions: {
+        scss: {
+          api: 'modern',
+        },
+      },
+    },
   }
 })
