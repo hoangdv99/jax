@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
 import LoginPage from '@/views/login/Index.vue'
 import SignupPage from '@/views/signup/Index.vue'
+import UserActivation from '@/views/user-activation/Index.vue'
 import { requireAuth } from '@/middlewares/auth'
 
 const router = createRouter({
@@ -22,6 +23,11 @@ const router = createRouter({
       path: '/signup',
       name: 'Signup',
       component: SignupPage,
+    },
+    {
+      path: '/activation',
+      name: 'UserActivation',
+      component: UserActivation,
     },
   ],
 })

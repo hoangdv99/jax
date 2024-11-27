@@ -9,6 +9,7 @@ function signin(payload: InputSignin) {
   return api('post', '/v1/tokens/authentication', payload)
 }
 
+
 export default {
   signup,
   signin,
