@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"strings"
 	"time"
 
 	"jax.hoangdv99/internal/constant"
@@ -124,4 +125,21 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	if user.IsAnonymous() {
+		app.invalidCredentialsResponse(w, r)
+		return
+	}
+
+	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
+	err := app.models.Tokens.DeleteToken(token)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelop{"message": "Logged out"}, nil)
 }

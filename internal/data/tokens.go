@@ -88,3 +88,13 @@ func (m TokenModel) DeleteAllForUser(scope string, userId int64) error {
 
 	return err
 }
+
+func (m TokenModel) DeleteToken(token string) error {
+	hash := sha256.Sum256([]byte(token))
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `DELETE FROM tokens WHERE hash = ?`
+	_, err := m.DB.ExecContext(ctx, query, hash[:])
+	return err
+}
