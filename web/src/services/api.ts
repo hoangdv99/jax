@@ -32,6 +32,10 @@ instance.interceptors.request.use(
   config => {
     const appStore = useAppStore()
     appStore.showLoading()
+    const token = localStorage.getItem('authToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
     return config
   },
   error => {
