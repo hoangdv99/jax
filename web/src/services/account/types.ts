@@ -7,3 +7,7 @@ export type InputSignin = {
   email: string
   password: string
 }
+
+export type UserActivationPayload = {
+  email: string
+}
