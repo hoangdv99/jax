@@ -8,24 +8,32 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	router := httprouter.New()
+	publicRouter := httprouter.New()
+	publicRouter.NotFound = http.HandlerFunc(app.notFoundResponse)
+	publicRouter.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	router.NotFound = http.HandlerFunc(app.notFoundResponse)
-	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
+	publicRouter.HandlerFunc(http.MethodGet, "/healthcheck", app.healthcheckHandler)
+	publicRouter.Handler(http.MethodGet, "/debug/vars", expvar.Handler())
 
-	router.HandlerFunc(http.MethodGet, "/v1/healthcheck", app.healthcheckHandler)
-	router.Handler(http.MethodGet, "/debug/vars", expvar.Handler())
+	publicRouter.HandlerFunc(http.MethodPost, "/users", app.registerUserHandler)
+	publicRouter.HandlerFunc(http.MethodPut, "/users/activation", app.activateUserHandler)
 
-	router.HandlerFunc(http.MethodGet, "/v1/users", app.getListUserHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/users", app.registerUserHandler)
-	router.HandlerFunc(http.MethodPut, "/v1/users/activation", app.activateUserHandler)
+	publicRouter.HandlerFunc(http.MethodPost, "/tokens/activation", app.createActivationTokenHandler)
+	publicRouter.HandlerFunc(http.MethodPost, "/tokens/authentication", app.createAuthenticationTokenHandler)
 
-	router.HandlerFunc(http.MethodPost, "/v1/tokens/activation", app.createActivationTokenHandler)
-	router.HandlerFunc(http.MethodPost, "/v1/tokens/authentication", app.createAuthenticationTokenHandler)
+	publicRouter.HandlerFunc(http.MethodPost, "/logout", app.logoutHandler)
 
-	router.HandlerFunc(http.MethodPost, "/v1/logout", app.logoutHandler)
+	// Protected routes (start with /v1) which need authentication
+	protectedRouter := httprouter.New()
+	protectedRouter.NotFound = http.HandlerFunc(app.notFoundResponse)
+	protectedRouter.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
-	router.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
+	protectedRouter.HandlerFunc(http.MethodGet, "/v1/users", app.getListUserHandler)
+	protectedRouter.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
 
-	return app.recoverPanic((app.authenticate(app.enableCORS(router))))
+	router := http.NewServeMux()
+	router.Handle("/", publicRouter)
+	router.Handle("/v1/", app.authenticate(protectedRouter))
+
+	return app.recoverPanic((app.enableCORS(router)))
 }
