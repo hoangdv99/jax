@@ -1,7 +1,8 @@
 import type { NavigationGuardNext, RouteLocationNormalized } from 'vue-router'
 import { compareAsc } from 'date-fns'
+import { services } from '@/services'
 
-export const requireAuth = (
+export const requireAuth = async (
   _to: RouteLocationNormalized,
   _from: RouteLocationNormalized,
   next: NavigationGuardNext
@@ -17,6 +18,7 @@ export const requireAuth = (
   if (!!token && isValidDate) {
     next()
   } else {
+    await services.account.logout()
     localStorage.removeItem('authToken')
     localStorage.removeItem('authTokenExpiry')
     next({ name: 'Login' })

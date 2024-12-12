@@ -19,8 +19,8 @@ func (app *application) routes() http.Handler {
 	publicRouter.HandlerFunc(http.MethodPut, "/users/activation", app.activateUserHandler)
 
 	publicRouter.HandlerFunc(http.MethodPost, "/tokens/activation", app.createActivationTokenHandler)
-	publicRouter.HandlerFunc(http.MethodPost, "/tokens/authentication", app.createAuthenticationTokenHandler)
 
+	publicRouter.HandlerFunc(http.MethodPost, "/login", app.loginHandler)
 	publicRouter.HandlerFunc(http.MethodPost, "/logout", app.logoutHandler)
 
 	// Protected routes (start with /v1) which need authentication

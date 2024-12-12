@@ -6,7 +6,7 @@ function signup(payload: InputSignup) {
 }
 
 function signin(payload: InputSignin) {
-  return api('post', '/tokens/authentication', payload)
+  return api('post', '/login', payload)
 }
 
 function resendActivationToken(payload: UserActivationPayload) {

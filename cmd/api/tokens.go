@@ -72,7 +72,7 @@ func (app *application) createActivationTokenHandler(w http.ResponseWriter, r *h
 	}
 }
 
-func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) loginHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -128,12 +128,6 @@ func (app *application) createAuthenticationTokenHandler(w http.ResponseWriter, 
 }
 
 func (app *application) logoutHandler(w http.ResponseWriter, r *http.Request) {
-	user := app.contextGetUser(r)
-	if user.IsAnonymous() {
-		app.invalidCredentialsResponse(w, r)
-		return
-	}
-
 	token := strings.Split(r.Header.Get("Authorization"), " ")[1]
 	err := app.models.Tokens.DeleteToken(token)
 	if err != nil {
