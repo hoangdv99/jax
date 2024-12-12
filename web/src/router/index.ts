@@ -3,6 +3,7 @@ import HomeView from '@/views/HomeView.vue'
 import LoginPage from '@/views/login/Index.vue'
 import SignupPage from '@/views/signup/Index.vue'
 import UserActivation from '@/views/user-activation/Index.vue'
+import WaitlistNotification from '@/views/waitlist/UserNotification.vue'
 import { requireAuth } from '@/middlewares/auth'
 
 const router = createRouter({
@@ -29,6 +30,11 @@ const router = createRouter({
       name: 'UserActivation',
       component: UserActivation,
     },
+    {
+      path: '/waitlist/notification',
+      name: 'WaitlistNotification',
+      component: WaitlistNotification,
+    }
   ],
 })
 

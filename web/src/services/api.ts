@@ -12,7 +12,7 @@ const instance = axios.create({
 export const api = async (
   methodType: string,
   endpoint: string,
-  params: any
+  params?: any
 ) => {
   try {
     const res = await (instance as any)[methodType](endpoint, params)

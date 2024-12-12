@@ -135,3 +135,11 @@ func (app *application) getListUserHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getCurrentUserHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	err := app.writeJSON(w, http.StatusOK, envelop{"currentUser": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

@@ -14,7 +14,11 @@ function resendActivationToken(payload: UserActivationPayload) {
 }
 
 function logout() {
-  return api('post', '/logout', {})
+  return api('post', '/logout')
+}
+
+function getCurrentUser(token: string) {
+  return api('get', `/v1/current-user`, { token })
 }
 
 export default {
@@ -22,4 +26,5 @@ export default {
   signin,
   resendActivationToken,
   logout,
+  getCurrentUser,
 }

@@ -29,6 +29,8 @@ func (app *application) routes() http.Handler {
 	protectedRouter.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/users", app.getListUserHandler)
+	protectedRouter.HandlerFunc(http.MethodGet, "/v1/current-user", app.getCurrentUserHandler)
+
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
 
 	router := http.NewServeMux()

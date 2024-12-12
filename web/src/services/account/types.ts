@@ -11,3 +11,9 @@ export type InputSignin = {
 export type UserActivationPayload = {
   email: string
 }
+
+export type User = {
+  id: number
+  email: string
+  status: number
+}
