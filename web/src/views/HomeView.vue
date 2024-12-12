@@ -1,6 +1,5 @@
 <template>
-  <main>Hello world!</main>
-  <button @click="logout">Logout</button>
+  <main>Homepage</main>
 </template>
 <script lang="ts" setup>
 import { onBeforeMount } from 'vue'
@@ -26,13 +25,4 @@ onBeforeMount(async () => {
     }
   }
 })
-
-async function logout() {
-  const res = await services.account.logout()
-  if (res.success) {
-    localStorage.removeItem('authToken')
-    localStorage.removeItem('authTokenExpiry')
-    router.push({ name: 'Login' })
-  }
-}
 </script>
