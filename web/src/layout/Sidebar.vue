@@ -4,6 +4,7 @@
       <img src="../../public/images/logoG.png" alt="" class="logo" />
       <div class="user-menu">
         <div
+          v-tooltip="'Homepage'"
           class="menu"
           :class="{ '-active': isActive('/') }"
           @click="navigate('/')"
@@ -11,6 +12,7 @@
           <i class="pi pi-home"></i>
         </div>
         <div
+          v-tooltip="'Stores management'"
           class="menu"
           :class="{ '-active': isActive('/stores') }"
           @click="navigate('/stores')"
@@ -21,6 +23,7 @@
       <Divider />
       <div class="admin-menu">
         <div
+          v-tooltip="'Users management'"
           class="menu"
           :class="{ '-active': isActive('/admin/users') }"
           @click="navigate('/admin/users')"
@@ -38,7 +41,7 @@
 </template>
 <script setup lang="ts">
 import router from '@/router'
-import { services } from '@/services';
+import { services } from '@/services'
 import { Divider } from 'primevue'
 
 defineOptions({
