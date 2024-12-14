@@ -4,10 +4,11 @@
   </div>
   <Toast />
   <RouterView />
+  <ConfirmDialog></ConfirmDialog>
 </template>
 <script lang="ts" setup>
 import ProgressSpinner from 'primevue/progressspinner'
-import { Toast } from 'primevue'
+import { Toast, ConfirmDialog } from 'primevue'
 import { useAppStore } from './stores/app'
 
 const appStore = useAppStore()
