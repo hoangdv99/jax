@@ -28,8 +28,7 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 		w.Header().Add("Vary", "Authorization")
 		authorizationHeader := r.Header.Get("Authorization")
 		if authorizationHeader == "" {
-			r = app.contextSetUser(r, data.AnonymousUser)
-			next.ServeHTTP(w, r)
+			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
 
