@@ -33,6 +33,8 @@ func (app *application) routes() http.Handler {
 
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
 
+	protectedRouter.HandlerFunc(http.MethodPost, "/v1/tag", app.createTagHandler)
+
 	router := http.NewServeMux()
 	router.Handle("/", publicRouter)
 	router.Handle("/v1/", app.authenticate(protectedRouter))
