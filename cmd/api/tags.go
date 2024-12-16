@@ -40,3 +40,14 @@ func (app *application) createTagHandler(w http.ResponseWriter, r *http.Request)
 
 	err = app.writeJSON(w, http.StatusCreated, envelop{"id": id}, nil)
 }
+
+func (app *application) getListTagHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	tags, err := app.models.Tags.ListByUserId(user.Id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	app.writeJSON(w, http.StatusOK, envelop{"tags": tags}, nil)
+}

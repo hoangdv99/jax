@@ -8,7 +8,7 @@ import (
 
 type Tag struct {
 	Id        int64     `json:"id"`
-	UserId    int64     `json:"userId"`
+	UserId    int64     `json:"-"`
 	Name      string    `json:"name"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
@@ -37,4 +37,27 @@ func (m TagModel) Insert(tag *Tag) (int64, error) {
 	}
 
 	return id, nil
+}
+
+func (m TagModel) ListByUserId(userId int64) ([]Tag, error) {
+	query := `SELECT id, name FROM tags where user_id = ?;`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	rows, err := m.DB.QueryContext(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+
+	var tags []Tag
+	for rows.Next() {
+		var tag Tag
+		err := rows.Scan(&tag.Id, &tag.Name)
+		if err != nil {
+			return nil, err
+		}
+		tags = append(tags, tag)
+	}
+
+	return tags, nil
 }
