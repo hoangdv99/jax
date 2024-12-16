@@ -39,6 +39,9 @@ func (app *application) createTagHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = app.writeJSON(w, http.StatusCreated, envelop{"id": id}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }
 
 func (app *application) getListTagHandler(w http.ResponseWriter, r *http.Request) {
@@ -49,5 +52,8 @@ func (app *application) getListTagHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	app.writeJSON(w, http.StatusOK, envelop{"tags": tags}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelop{"tags": tags}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

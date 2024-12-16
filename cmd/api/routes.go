@@ -40,5 +40,5 @@ func (app *application) routes() http.Handler {
 	router.Handle("/", publicRouter)
 	router.Handle("/v1/", app.authenticate(protectedRouter))
 
-	return app.recoverPanic((app.enableCORS(router)))
+	return app.recoverPanic(app.enableCORS(router))
 }
