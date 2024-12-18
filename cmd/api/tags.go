@@ -32,6 +32,17 @@ func (app *application) createTagHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	existedTag, err := app.models.Tags.GetByName(tag.Name)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	if existedTag != nil {
+		v.AddError("name", "duplicated tag")
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	id, err := app.models.Tags.Insert(tag)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

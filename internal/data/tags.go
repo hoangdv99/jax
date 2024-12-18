@@ -61,3 +61,17 @@ func (m TagModel) ListByUserId(userId int64) ([]Tag, error) {
 
 	return tags, nil
 }
+
+func (m TagModel) GetByName(name string) (*Tag, error) {
+	query := "SELECT id, name FROM tags WHERE name = ? LIMIT 1;"
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var tag Tag
+	err := m.DB.QueryRowContext(ctx, query, name).Scan(&tag.Id, &tag.Name)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tag, nil
+}
