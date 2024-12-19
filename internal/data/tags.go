@@ -109,3 +109,16 @@ func (m TagModel) Update(tag *Tag) error {
 
 	return nil
 }
+
+func (m TagModel) Delete(id int64) error {
+	query := `DELETE FROM tags WHERE id = ?`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := m.DB.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

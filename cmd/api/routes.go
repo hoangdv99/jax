@@ -36,6 +36,7 @@ func (app *application) routes() http.Handler {
 	protectedRouter.HandlerFunc(http.MethodPost, "/v1/tag", app.createTagHandler)
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/tags", app.getListTagHandler)
 	protectedRouter.HandlerFunc(http.MethodPatch, "/v1/tag/:id", app.updateTagHandler)
+	protectedRouter.HandlerFunc(http.MethodDelete, "/v1/tag/:id", app.deleteTagHandler)
 
 	router := http.NewServeMux()
 	router.Handle("/", publicRouter)
