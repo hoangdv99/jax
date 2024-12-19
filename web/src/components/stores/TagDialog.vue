@@ -9,7 +9,7 @@
   >
     <InputGroup>
       <InputText v-model="tag.name" />
-      <Button icon="pi pi-send" @click="createNewTag" />
+      <Button icon="pi pi-send" @click="onClick" />
     </InputGroup>
   </Dialog>
 </template>
@@ -49,6 +49,14 @@ const dialogHeader = computed(() => {
   return props.originalTag ? 'Edit tag' : 'Add new tag'
 })
 
+function onClick() {
+  if (props.originalTag) {
+    updateTag()
+  } else {
+    createNewTag()
+  }
+}
+
 async function createNewTag() {
   const res = await services.store.createNewTag({ name: tag.value.name.trim() })
   if (res.success) {
@@ -56,6 +64,28 @@ async function createNewTag() {
       severity: 'success',
       summary: 'Success',
       detail: 'Created new tag',
+      life: 3000,
+    })
+    storeStore.getListTag()
+    emit('hide')
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: res.message?.name || 'Internal server error',
+    })
+  }
+}
+
+async function updateTag() {
+  const res = await services.store.updateTag(tag.value.id, {
+    name: tag.value.name.trim(),
+  })
+  if (res.success) {
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Updated tag',
       life: 3000,
     })
     storeStore.getListTag()
