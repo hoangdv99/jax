@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
 	"jax.hoangdv99/internal/data"
@@ -64,6 +65,63 @@ func (app *application) getListTagHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelop{"tags": tags}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) updateTagHandler(w http.ResponseWriter, r *http.Request) {
+	id, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+
+	tag, err := app.models.Tags.GetById(id)
+	if err != nil {
+		switch {
+		case errors.Is(err, data.ErrRecordNotFound):
+			app.notFoundResponse(w, r)
+		default:
+			app.serverErrorResponse(w, r, err)
+		}
+		return
+	}
+
+	var input struct {
+		Name *string `json:"name"`
+	}
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	existedTag, err := app.models.Tags.GetByName(*input.Name)
+	if existedTag != nil && existedTag.Id != id {
+		v.AddError("name", "duplicated tag")
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	if input.Name != nil {
+		tag.Name = *input.Name
+	}
+
+	v.Check(tag.Name != "", "name", "name is required")
+	if !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	err = app.models.Tags.Update(tag)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"message": "OK"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}

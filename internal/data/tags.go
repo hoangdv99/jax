@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"time"
 )
 
@@ -74,4 +75,37 @@ func (m TagModel) GetByName(name string) (*Tag, error) {
 	}
 
 	return &tag, nil
+}
+
+func (m TagModel) GetById(id int64) (*Tag, error) {
+	query := "SELECT id, name FROM tags WHERE id = ? LIMIT 1;"
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var tag Tag
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&tag.Id, &tag.Name)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &tag, nil
+}
+
+func (m TagModel) Update(tag *Tag) error {
+	query := `UPDATE tags SET name = ? WHERE id = ?`
+	args := []interface{}{tag.Name, tag.Id}
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	_, err := m.DB.ExecContext(ctx, query, args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
