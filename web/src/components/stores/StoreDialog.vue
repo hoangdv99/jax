@@ -50,7 +50,7 @@
                 icon="pi pi-trash"
                 severity="danger"
                 variant="text"
-                @click="deleteTag"
+                @click="e => onDeleteTag(e, slotProps.option.id)"
               />
             </div>
           </div>
@@ -65,12 +65,13 @@
   />
 </template>
 <script setup lang="ts">
-import { Dialog, InputText, MultiSelect, Button } from 'primevue'
+import { Dialog, InputText, MultiSelect, Button, useToast } from 'primevue'
 import { reactive, ref } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import TagDialog from './TagDialog.vue'
 import type { Tag } from '@/services/store/types'
 import { useStoreStore } from '@/stores/store'
+import { services } from '@/services'
 
 defineOptions({
   name: 'StoreDialog',
@@ -78,6 +79,7 @@ defineOptions({
 defineEmits(['hide'])
 
 const confirm = useConfirm()
+const toast = useToast()
 const storeStore = useStoreStore()
 
 const props = defineProps({
@@ -92,7 +94,7 @@ const showTagDialog = ref(false)
 
 const selectedTag = ref<Tag>()
 
-function deleteTag(e: Event) {
+function onDeleteTag(e: Event, id: number) {
   e.stopPropagation()
   confirm.require({
     header: 'Confirmation',
@@ -108,7 +110,28 @@ function deleteTag(e: Event) {
       label: 'Delete',
       severity: 'danger',
     },
+    accept: async () => {
+      await deleteTag(id)
+    },
   })
+}
+
+async function deleteTag(id: number) {
+  const res = await services.store.deleteTag(id)
+  if (res.success) {
+    storeStore.getListTag()
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Deleted tag',
+    })
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: res.message?.name || 'Internal server error',
+    })
+  }
 }
 
 function startCreateNewTag() {

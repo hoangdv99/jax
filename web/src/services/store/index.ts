@@ -13,8 +13,13 @@ function updateTag(id: number, payload: IUpdateTagPayload) {
   return api('patch', `/v1/tag/${id}`, payload)
 }
 
+function deleteTag(id: number) {
+  return api('delete', `/v1/tag/${id}`)
+}
+
 export default {
   getListTag,
   createNewTag,
   updateTag,
+  deleteTag,
 }
