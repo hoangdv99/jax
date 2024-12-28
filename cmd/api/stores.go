@@ -69,3 +69,16 @@ func (app *application) addStoreHandler(w http.ResponseWriter, r *http.Request) 
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) listStoreHandler(w http.ResponseWriter, r *http.Request) {
+	user := app.contextGetUser(r)
+	stores, err := app.models.Stores.List(user.Id)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelop{"data": stores}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

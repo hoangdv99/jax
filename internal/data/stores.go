@@ -17,6 +17,7 @@ type Store struct {
 	Url       string    `json:"url"`
 	Platform  string    `json:"platform"`
 	IsActive  bool      `json:"isActive"`
+	Tags      []Tag     `json:"tags"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 }
@@ -168,4 +169,62 @@ func (m StoreModel) UpdateUserStore(user *User, store *Store, tagIds []int64) er
 	}
 
 	return nil
+}
+
+func (m StoreModel) List(userId int64) ([]Store, error) {
+	query := `
+		SELECT
+			s.id,
+			s.url,
+			s.platform,
+			s.is_active,
+			t.id,
+			t.name
+		FROM stores AS s
+		INNER JOIN user_stores AS us ON us.store_id = s.id
+		LEFT JOIN user_tags AS ut ON ut.store_id = s.id
+		INNER JOIN tags AS t ON ut.tag_id = t.id
+		WHERE us.user_id = ?;
+	`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	rows, err := m.DB.QueryContext(ctx, query, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	storeMap := make(map[int64]*Store)
+	for rows.Next() {
+		var storeId int64
+		var url, platform, tagName string
+		var isActive bool
+		var tagId int64
+		err := rows.Scan(&storeId, &url, &platform, &isActive, &tagId, &tagName)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, exists := storeMap[storeId]; !exists {
+			storeMap[storeId] = &Store{
+				Id:       storeId,
+				Url:      url,
+				Platform: platform,
+				IsActive: isActive,
+				Tags:     []Tag{},
+			}
+		}
+
+		storeMap[storeId].Tags = append(storeMap[storeId].Tags, Tag{
+			Id:   tagId,
+			Name: tagName,
+		})
+	}
+
+	stores := make([]Store, 0, len(storeMap))
+	for _, store := range storeMap {
+		stores = append(stores, *store)
+	}
+
+	return stores, nil
 }
