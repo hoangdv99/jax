@@ -31,7 +31,7 @@ func (app *application) routes() http.Handler {
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/users", app.getListUserHandler)
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/current-user", app.getCurrentUserHandler)
 
-	protectedRouter.HandlerFunc(http.MethodGet, "/v1/stores/platform", app.getStorePlatformHandler)
+	protectedRouter.HandlerFunc(http.MethodPost, "/v1/store", app.addStoreHandler)
 
 	protectedRouter.HandlerFunc(http.MethodPost, "/v1/tag", app.createTagHandler)
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/tags", app.getListTagHandler)

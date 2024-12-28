@@ -10,7 +10,13 @@
   >
     <div class="field">
       <label for="url" class="label">URL</label>
-      <InputText id="url" autocomplete="off" class="input" />
+      <InputText
+        id="url"
+        v-model="store.url"
+        autocomplete="off"
+        placeholder="Ex: https://example.com"
+        class="input"
+      />
     </div>
     <div class="field">
       <label for="tags" class="label">Tags</label>
@@ -23,6 +29,7 @@
         filterPlaceholder="Search"
         :show-toggle-all="false"
         option-label="name"
+        placeholder="Select tags"
         class="select"
       >
         <template #header>
@@ -56,6 +63,16 @@
           </div>
         </template>
       </MultiSelect>
+    </div>
+    <div class="actions">
+      <Button
+        type="button"
+        label="Cancel"
+        severity="secondary"
+        variant="outlined"
+        @click="$emit('hide')"
+      ></Button>
+      <Button type="button" label="Save" @click="saveStore"></Button>
     </div>
   </Dialog>
   <TagDialog
@@ -143,6 +160,8 @@ function startEdit(e: Event, tag: Tag) {
   showTagDialog.value = true
   selectedTag.value = tag
 }
+
+function saveStore() {}
 </script>
 <style lang="scss" scoped>
 .store-dialog {
@@ -158,6 +177,11 @@ function startEdit(e: Event, tag: Tag) {
   .field > .input,
   .field > .select {
     width: 100%;
+  }
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
   }
 }
 

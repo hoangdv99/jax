@@ -1,34 +1,70 @@
 package main
 
 import (
+	"errors"
 	"net/http"
 
+	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/validator"
 )
 
-func (app *application) getStorePlatformHandler(w http.ResponseWriter, r *http.Request) {
+func (app *application) addStoreHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		url string
+		Url    string  `json:"url"`
+		TagIds []int64 `json:"tagIds"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
 	}
 
 	v := validator.New()
-
-	qs := r.URL.Query()
-	input.url = app.readString(qs, "url", "")
-
-	v.Check(input.url != "", "url", "url required")
+	v.Check(input.Url != "", "url", "must be provided")
 	if !v.Valid() {
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
 
-	platform, err := app.models.Stores.GetStorePlatform(input.url)
+	platform, err := app.models.Stores.GetStorePlatform(input.Url)
 	if err != nil {
-		app.serverErrorResponse(w, r, err)
+		app.badRequestResponse(w, r, errors.New("Invalid url or unsupported platform"))
 		return
 	}
 
-	err = app.writeJSON(w, http.StatusOK, envelop{"platform": platform}, nil)
+	store, err := app.models.Stores.GetByUrl(input.Url)
+	user := app.contextGetUser(r)
+	if store == nil {
+		store := &data.Store{
+			Url:      input.Url,
+			Platform: platform,
+			IsActive: true,
+		}
+		err := app.models.Stores.Insert(user, store, input.TagIds)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrDuplicatedStore):
+				app.badRequestResponse(w, r, err)
+			default:
+				app.serverErrorResponse(w, r, err)
+			}
+			return
+		}
+	} else {
+		err := app.models.Stores.UpdateUserStore(user, store, input.TagIds)
+		if err != nil {
+			switch {
+			case errors.Is(err, data.ErrDuplicatedStore):
+				app.badRequestResponse(w, r, err)
+			default:
+				app.serverErrorResponse(w, r, err)
+			}
+			return
+		}
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"message": "OK"}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
