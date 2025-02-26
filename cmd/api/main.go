@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,8 +15,10 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
+	"github.com/natefinch/lumberjack"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"jax.hoangdv99/internal/data"
-	"jax.hoangdv99/internal/jsonlog"
 	"jax.hoangdv99/internal/mailer"
 )
 
@@ -43,17 +46,16 @@ type config struct {
 
 type application struct {
 	config config
-	logger *jsonlog.Logger
+	logger zerolog.Logger
 	models data.Models
 	wg     sync.WaitGroup
 	mailer mailer.Mailer
 }
 
 func main() {
-	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 	err := godotenv.Load()
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		log.Fatal().Err(err).Msg("error loading .env file")
 	}
 
 	var cfg config
@@ -72,22 +74,22 @@ func main() {
 
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		log.Fatal().Err(err).Msg("error opening database connection")
 	}
 	defer db.Close()
 
-	logger.PrintInfo("database connection pool established", nil)
+	log.Info().Msg("database connection established")
 
 	app := &application{
 		config: cfg,
-		logger: logger,
+		logger: initLogger(),
 		models: data.NewModels(db),
 		mailer: mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
 	err = app.serve()
 	if err != nil {
-		logger.PrintFatal(err, nil)
+		log.Fatal().Err(err).Msg("error starting server")
 	}
 }
 
@@ -105,9 +107,7 @@ func (app *application) serve() error {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 		s := <-quit
-		app.logger.PrintInfo("shutting down server", map[string]string{
-			"signal": s.String(),
-		})
+		app.logger.Info().Str("signal", s.String()).Msg("shutting down server")
 
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -117,18 +117,13 @@ func (app *application) serve() error {
 			shutdownError <- err
 		}
 
-		app.logger.PrintInfo("completing background tasks", map[string]string{
-			"addr": srv.Addr,
-		})
+		app.logger.Info().Str("addr", srv.Addr).Msg("completing background tasks")
 
 		app.wg.Wait()
 		shutdownError <- nil
 	}()
 
-	app.logger.PrintInfo("starting server", map[string]string{
-		"addr": srv.Addr,
-		"env":  app.config.env,
-	})
+	app.logger.Info().Str("addr", srv.Addr).Str("env", app.config.env).Msg("starting server")
 
 	err := srv.ListenAndServe()
 	if !errors.Is(err, http.ErrServerClosed) {
@@ -140,9 +135,7 @@ func (app *application) serve() error {
 		return err
 	}
 
-	app.logger.PrintInfo("stopped server", map[string]string{
-		"addr": srv.Addr,
-	})
+	app.logger.Info().Str("addr", srv.Addr).Msg("stopped server")
 
 	return nil
 }
@@ -171,4 +164,25 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 
 	return db, nil
+}
+
+func initLogger() zerolog.Logger {
+	logFileName := "tmp/logs/" + time.Now().Format("2006-01-02") + ".log"
+
+	if _, err := os.Stat("tmp/logs"); os.IsNotExist(err) {
+		_ = os.Mkdir("tmp/logs", 0755)
+	}
+
+	logFile := &lumberjack.Logger{
+		Filename:   logFileName,
+		MaxSize:    10,
+		MaxBackups: 7,
+		MaxAge:     30,
+		Compress:   true,
+	}
+
+	multi := io.MultiWriter(os.Stdout, logFile)
+
+	logger := zerolog.New(multi).With().Timestamp().Caller().Logger()
+	return logger
 }
