@@ -57,7 +57,7 @@ func (app *application) createActivationTokenHandler(w http.ResponseWriter, r *h
 		}
 		err = app.mailer.Send(user.Email, "token_activation.html", data)
 		if err != nil {
-			app.logger.PrintError(err, nil)
+			app.logger.Error().Err(err).Msg("")
 		}
 	})
 
