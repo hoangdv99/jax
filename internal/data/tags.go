@@ -71,6 +71,9 @@ func (m TagModel) GetByName(name string) (*Tag, error) {
 	var tag Tag
 	err := m.DB.QueryRowContext(ctx, query, name).Scan(&tag.Id, &tag.Name)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 
