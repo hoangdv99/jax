@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -16,8 +15,10 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"github.com/natefinch/lumberjack"
+	"github.com/pkg/errors"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"github.com/rs/zerolog/pkgerrors"
 	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/mailer"
 )
@@ -183,6 +184,10 @@ func initLogger() zerolog.Logger {
 
 	multi := io.MultiWriter(os.Stdout, logFile)
 
-	logger := zerolog.New(multi).With().Timestamp().Caller().Logger()
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+	logger := zerolog.New(multi)
+
+	// err := errors.Wrap(errors.New("error message"), "from error")
+	// logger.Log().Stack().Err(err).Msg("")
 	return logger
 }

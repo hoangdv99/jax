@@ -3,10 +3,13 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 func (app *application) logError(r *http.Request, err error) {
-	app.logger.Error().Err(err).Str("request_method", r.Method).Str("request_url", r.URL.String()).Msg("")
+	wrappedErr := errors.Wrap(errors.New(err.Error()), "")
+	app.logger.Log().Stack().Err(wrappedErr).Str("request_method", r.Method).Str("request_url", r.URL.String()).Msg("")
 }
 
 func (app *application) errorResponse(w http.ResponseWriter, r *http.Request, status int, message interface{}) {
