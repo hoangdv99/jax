@@ -1,10 +1,11 @@
 import { services } from '@/services'
-import type { Tag } from '@/services/store/types'
+import type { Tag, Store } from '@/services/store/types'
 import { defineStore } from 'pinia'
 
 export const useStoreStore = defineStore('storeStore', {
   state: () => ({
     listTag: <Tag[]>{},
+    listStore: <Store[]>{},
   }),
   actions: {
     async getListTag() {
@@ -14,5 +15,12 @@ export const useStoreStore = defineStore('storeStore', {
       }
       return res
     },
+    async getListStore() {
+      const res = await services.store.getListStore()
+      if (res.success) {
+        this.listStore = res.data.stores
+      }
+      return res
+    }
   },
 })

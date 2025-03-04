@@ -1,44 +1,18 @@
 <template>
-  <Dialog
-    :visible="props.visible"
-    modal
-    header="Add new store"
-    :draggable="false"
-    :style="{ width: '640px' }"
-    class="store-dialog"
-    @update:visible="$emit('hide')"
-  >
+  <Dialog :visible="props.visible" modal header="Add new store" :draggable="false" :style="{ width: '640px' }"
+    class="store-dialog" @update:visible="$emit('hide')">
     <div class="field">
       <label for="url" class="label">URL</label>
-      <InputText
-        id="url"
-        v-model="store.url"
-        autocomplete="off"
-        placeholder="Ex: https://example.com"
-        class="input"
-      />
+      <InputText id="url" v-model="store.url" autocomplete="off" placeholder="Ex: https://example.com" class="input" />
     </div>
     <div class="field">
       <label for="tags" class="label">Tags</label>
-      <MultiSelect
-        id="tags"
-        v-model="store.tags"
-        display="chip"
-        :options="storeStore.listTag"
-        filter
-        filterPlaceholder="Search"
-        :show-toggle-all="false"
-        option-label="name"
-        placeholder="Select tags"
-        class="select"
-      >
+      <MultiSelect id="tags" v-model="store.tags" display="chip" :options="storeStore.listTag" filter
+        filterPlaceholder="Search" :show-toggle-all="false" option-label="name" placeholder="Select tags"
+        class="select">
         <template #header>
           <div class="header-container">
-            <Button
-              icon="pi pi-plus"
-              label="Create new tag"
-              @click="startCreateNewTag"
-            />
+            <Button icon="pi pi-plus" label="Create new tag" @click="startCreateNewTag" />
           </div>
         </template>
         <template #option="slotProps">
@@ -47,46 +21,28 @@
               {{ slotProps.option.name }}
             </div>
             <div class="actions">
-              <Button
-                icon="pi pi-pencil"
-                severity="secondary"
-                variant="text"
-                @click="e => startEdit(e, slotProps.option)"
-              />
-              <Button
-                icon="pi pi-trash"
-                severity="danger"
-                variant="text"
-                @click="e => onDeleteTag(e, slotProps.option.id)"
-              />
+              <Button icon="pi pi-pencil" severity="secondary" variant="text"
+                @click="e => startEdit(e, slotProps.option)" />
+              <Button icon="pi pi-trash" severity="danger" variant="text"
+                @click="e => onDeleteTag(e, slotProps.option.id)" />
             </div>
           </div>
         </template>
       </MultiSelect>
     </div>
     <div class="actions">
-      <Button
-        type="button"
-        label="Cancel"
-        severity="secondary"
-        variant="outlined"
-        @click="$emit('hide')"
-      ></Button>
+      <Button type="button" label="Cancel" severity="secondary" variant="outlined" @click="$emit('hide')"></Button>
       <Button type="button" label="Save" @click="saveStore"></Button>
     </div>
   </Dialog>
-  <TagDialog
-    :visible="showTagDialog"
-    :originalTag="selectedTag"
-    @hide="showTagDialog = false"
-  />
+  <TagDialog :visible="showTagDialog" :originalTag="selectedTag" @hide="showTagDialog = false" />
 </template>
 <script setup lang="ts">
 import { Dialog, InputText, MultiSelect, Button, useToast } from 'primevue'
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { useConfirm } from 'primevue/useconfirm'
 import TagDialog from './TagDialog.vue'
-import type { Tag } from '@/services/store/types'
+import type { Store, Tag } from '@/services/store/types'
 import { useStoreStore } from '@/stores/store'
 import { services } from '@/services'
 
@@ -101,14 +57,20 @@ const storeStore = useStoreStore()
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
+  originalStore: { type: Object, default: () => ({}) },
 })
 
-const store = reactive({
+watch(() => props.originalStore, (value) => {
+  store.url = value.url
+  store.tags = value.tags
+})
+
+const store = reactive<Store>({
+  id: null,
   url: '',
   tags: [],
 })
 const showTagDialog = ref(false)
-
 const selectedTag = ref<Tag>()
 
 function onDeleteTag(e: Event, id: number) {
@@ -160,8 +122,26 @@ function startEdit(e: Event, tag: Tag) {
   showTagDialog.value = true
   selectedTag.value = tag
 }
-
-function saveStore() {}
+async function saveStore() {
+  const res = await services.store.addStore({
+    url: store.url,
+    tagIds: store.tags.map((tag) => tag.id),
+  })
+  if (res.success) {
+    storeStore.getListStore()
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Added store',
+    })
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: res.message?.name || 'Internal server error',
+    })
+  }
+}
 </script>
 <style lang="scss" scoped>
 .store-dialog {
@@ -171,13 +151,16 @@ function saveStore() {}
     align-items: center;
     margin-bottom: 16px;
   }
-  .field > .label {
+
+  .field>.label {
     font-weight: 600;
   }
-  .field > .input,
-  .field > .select {
+
+  .field>.input,
+  .field>.select {
     width: 100%;
   }
+
   .actions {
     display: flex;
     justify-content: flex-end;

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-sql-driver/mysql"
@@ -64,15 +65,15 @@ func (m StoreModel) Insert(user *User, store *Store, tagIds []int64) error {
 	if err != nil {
 		return err
 	}
-	query := `INSERT INTO stores (url, platform, is_active) VALUE (?, ?, ?);`
-	args := []interface{}{store.Url, store.Platform, store.IsActive}
+	query := `INSERT INTO stores (url, platform, is_active) VALUES (?, ?, ?);`
+	args := []any{store.Url, store.Platform, store.IsActive}
 	result, err := tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		tx.Rollback()
 		return err
 	}
 
-	query = `INSERT INTO user_stores (user_id, store_id) VALUE (?, ?);`
+	query = `INSERT INTO user_stores (user_id, store_id) VALUES (?, ?);`
 	storeId, err := result.LastInsertId()
 	if err != nil {
 		tx.Rollback()
@@ -81,7 +82,7 @@ func (m StoreModel) Insert(user *User, store *Store, tagIds []int64) error {
 		}
 		return err
 	}
-	args = []interface{}{user.Id, storeId}
+	args = []any{user.Id, storeId}
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		tx.Rollback()
@@ -90,11 +91,13 @@ func (m StoreModel) Insert(user *User, store *Store, tagIds []int64) error {
 
 	if len(tagIds) > 0 {
 		query = `INSERT INTO user_tags (store_id, tag_id) VALUES `
-		args = []interface{}{}
+		args = []any{}
+		values := []string{}
 		for _, tagId := range tagIds {
-			query += "(?, ?) "
+			values = append(values, "(?, ?)")
 			args = append(args, storeId, tagId)
 		}
+		query += strings.Join(values, ", ")
 		_, err = tx.ExecContext(ctx, query, args...)
 		if err != nil {
 			tx.Rollback()

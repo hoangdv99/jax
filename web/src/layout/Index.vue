@@ -19,6 +19,7 @@ defineOptions({
 }
 
 .content-container {
+  width: 100%;
   padding: 16px;
 }
 </style>

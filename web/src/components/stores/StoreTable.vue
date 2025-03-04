@@ -1,0 +1,90 @@
+<template>
+  <div class="store-table">
+    <DataTable :value="props.stores" class="table">
+      <Column field="url" header="Store URL">
+        <template #body="slotProps">
+          <a :href="slotProps.data.url" target="_blank">{{ slotProps.data.url }}</a>
+        </template>
+      </Column>
+      <Column field="platform" header="Platform"></Column>
+      <Column field="tags" header="Tags">
+        <template #body="slotProps">
+          <Tag v-for="tag in slotProps.data.tags" :key="tag.id" :value="tag.name" rounded severity="secondary"
+            class="tag" />
+        </template>
+      </Column>
+      <Column>
+        <template #body="slotProps">
+          <div class="action-wrapper">
+            <Button icon="pi pi-pencil" variant="text" severity="secondary" @click="onUpdate(slotProps.data)"></Button>
+            <Button icon="pi pi-trash" variant="text" severity="danger" @click="onDelete"></Button>
+          </div>
+        </template>
+      </Column>
+      <template #empty>
+        <p class="no-data">No data</p>
+      </template>
+    </DataTable>
+    <StoreDialog :originalStore="selectedStore" :visible="showStoreDialog" @hide="showStoreDialog = false" />
+  </div>
+</template>
+<script setup lang="ts">
+import { DataTable, Column, Button, Tag } from 'primevue'
+import { useConfirm } from 'primevue/useconfirm'
+import { ref } from 'vue'
+import StoreDialog from './StoreDialog.vue'
+import type { Store } from '@/services/store/types'
+
+defineOptions({
+  name: 'StoreTable',
+})
+
+const confirm = useConfirm()
+
+const props = defineProps(['stores'])
+
+const showStoreDialog = ref(false)
+const selectedStore = ref()
+
+function onUpdate(store: Store) {
+  selectedStore.value = store
+  showStoreDialog.value = true
+}
+
+function onDelete() {
+  confirm.require({
+    header: 'Confirmation',
+    message: 'Do you want to delete this store?',
+    rejectLabel: 'Cancel',
+    icon: 'pi pi-info-circle',
+    rejectProps: {
+      label: 'Cancel',
+      severity: 'secondary',
+      outlined: true,
+    },
+    acceptProps: {
+      label: 'Delete',
+      severity: 'danger',
+    },
+    accept: async () => { },
+  })
+}
+
+</script>
+<style lang="scss" scoped>
+.store-table {
+  .tag {
+    margin-right: 8px;
+    font-weight: 400;
+  }
+  .no-data {
+    text-align: center;
+  }
+}
+
+.action-wrapper {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+}
+</style>

@@ -187,7 +187,5 @@ func initLogger() zerolog.Logger {
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 	logger := zerolog.New(multi)
 
-	// err := errors.Wrap(errors.New("error message"), "from error")
-	// logger.Log().Stack().Err(err).Msg("")
 	return logger
 }
