@@ -3,6 +3,7 @@ import type {
   ICreateTagPayload,
   IUpdateTagPayload,
   ICreateStorePayload,
+  IUpdateStorePayload,
 } from './types'
 
 function getListTag() {
@@ -29,6 +30,10 @@ function getListStore() {
   return api('get', '/v1/stores')
 }
 
+function updateStore(id: number, payload: IUpdateStorePayload) {
+  return api('put', `/v1/store/${id}`, payload)
+}
+
 export default {
   getListTag,
   createNewTag,
@@ -36,4 +41,5 @@ export default {
   deleteTag,
   addStore,
   getListStore,
+  updateStore,
 }

@@ -3,7 +3,8 @@
     class="store-dialog" @update:visible="$emit('hide')">
     <div class="field">
       <label for="url" class="label">URL</label>
-      <InputText id="url" v-model="store.url" autocomplete="off" placeholder="Ex: https://example.com" class="input" />
+      <InputText id="url" v-model="store.url" :disabled="Boolean(originalStore)" autocomplete="off"
+        placeholder="Ex: https://example.com" class="input" />
     </div>
     <div class="field">
       <label for="tags" class="label">Tags</label>
@@ -23,7 +24,7 @@
             <div class="actions">
               <Button icon="pi pi-pencil" severity="secondary" variant="text"
                 @click="e => startEdit(e, slotProps.option)" />
-              <Button icon="pi pi-trash" severity="danger" variant="text"
+              <Button icon="pi pi-trash" severity="danger" variant="text" tabindex="-1"
                 @click="e => onDeleteTag(e, slotProps.option.id)" />
             </div>
           </div>
@@ -49,7 +50,7 @@ import { services } from '@/services'
 defineOptions({
   name: 'StoreDialog',
 })
-defineEmits(['hide'])
+const emit = defineEmits(['hide'])
 
 const confirm = useConfirm()
 const toast = useToast()
@@ -74,6 +75,7 @@ const showTagDialog = ref(false)
 const selectedTag = ref<Tag>()
 
 function onDeleteTag(e: Event, id: number) {
+  e.preventDefault()
   e.stopPropagation()
   confirm.require({
     header: 'Confirmation',
@@ -123,6 +125,14 @@ function startEdit(e: Event, tag: Tag) {
   selectedTag.value = tag
 }
 async function saveStore() {
+  if (Boolean(props.originalStore)) {
+    await updateStore()
+  } else {
+    await addStore()
+  }
+}
+
+async function addStore() {
   const res = await services.store.addStore({
     url: store.url,
     tagIds: store.tags.map((tag) => tag.id),
@@ -134,6 +144,31 @@ async function saveStore() {
       summary: 'Success',
       detail: 'Added store',
     })
+    emit('hide')
+  } else {
+    toast.add({
+      severity: 'error',
+      summary: 'Error',
+      detail: res.message?.name || 'Internal server error',
+    })
+  }
+}
+
+async function updateStore() {
+  const res = await services.store.updateStore(
+    props.originalStore.id,
+    {
+      tagIds: store.tags.map((tag) => tag.id),
+    }
+  )
+  if (res.success) {
+    storeStore.getListStore()
+    toast.add({
+      severity: 'success',
+      summary: 'Success',
+      detail: 'Edited store',
+    })
+    emit('hide')
   } else {
     toast.add({
       severity: 'error',

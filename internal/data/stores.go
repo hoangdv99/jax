@@ -132,6 +132,25 @@ func (m StoreModel) GetByUrl(url string) (*Store, error) {
 	return &store, nil
 }
 
+func (m StoreModel) GetById(id int64) (*Store, error) {
+	query := `SELECT id, url, platform, is_active FROM stores WHERE id = ?;`
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var store Store
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(&store.Id, &store.Url, &store.Platform, &store.IsActive)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &store, nil
+}
+
 func (m StoreModel) UpdateUserStore(user *User, store *Store, tagIds []int64) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
@@ -142,7 +161,7 @@ func (m StoreModel) UpdateUserStore(user *User, store *Store, tagIds []int64) er
 	}
 
 	query := `INSERT INTO user_stores (user_id, store_id) VALUE (?, ?);`
-	args := []interface{}{user.Id, store.Id}
+	args := []any{user.Id, store.Id}
 	_, err = tx.ExecContext(ctx, query, args...)
 	if err != nil {
 		tx.Rollback()
@@ -154,7 +173,7 @@ func (m StoreModel) UpdateUserStore(user *User, store *Store, tagIds []int64) er
 
 	if len(tagIds) > 0 {
 		query = `INSERT INTO user_tags (store_id, tag_id) VALUES `
-		args = []interface{}{}
+		args = []any{}
 		for _, tagId := range tagIds {
 			query += "(?, ?) "
 			args = append(args, store.Id, tagId)
@@ -230,4 +249,46 @@ func (m StoreModel) List(userId int64) ([]Store, error) {
 	}
 
 	return stores, nil
+}
+
+func (m StoreModel) UpdateStoreTags(storeId int64, tagIds []int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Delete existing tags
+	query := `DELETE FROM user_tags WHERE store_id = ?;`
+	_, err = tx.ExecContext(ctx, query, storeId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Insert new tags
+	if len(tagIds) > 0 {
+		query = `INSERT INTO user_tags (store_id, tag_id) VALUES `
+		args := []any{}
+		values := []string{}
+		for _, tagId := range tagIds {
+			values = append(values, "(?, ?)")
+			args = append(args, storeId, tagId)
+		}
+		query += strings.Join(values, ", ")
+		_, err = tx.ExecContext(ctx, query, args...)
+		if err != nil {
+			tx.Rollback()
+			return err
+		}
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

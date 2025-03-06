@@ -82,3 +82,32 @@ func (app *application) listStoreHandler(w http.ResponseWriter, r *http.Request)
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		TagIds []int64 `json:"tagIds"`
+	}
+
+	storeId, err := app.readIdParam(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	err = app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	err = app.models.Stores.UpdateStoreTags(storeId, input.TagIds)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"message": "OK"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

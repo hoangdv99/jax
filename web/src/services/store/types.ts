@@ -21,3 +21,7 @@ export interface ICreateStorePayload {
   url: string
   tagIds: number[]
 }
+
+export interface IUpdateStorePayload {
+  tagIds: number[]
+}

@@ -54,10 +54,7 @@ type application struct {
 }
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal().Err(err).Msg("error loading .env file")
-	}
+	godotenv.Load()
 
 	var cfg config
 	cfg.port = getEnvAsInt("PORT", 4000)
