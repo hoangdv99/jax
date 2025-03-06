@@ -5,7 +5,7 @@ import { defineStore } from 'pinia'
 export const useStoreStore = defineStore('storeStore', {
   state: () => ({
     listTag: <Tag[]>{},
-    listStore: <Store[]>{},
+    listStore: <Store[]>[],
   }),
   actions: {
     async getListTag() {
@@ -18,7 +18,7 @@ export const useStoreStore = defineStore('storeStore', {
     async getListStore() {
       const res = await services.store.getListStore()
       if (res.success) {
-        this.listStore = res.data.stores
+        this.listStore = res.data.data
       }
       return res
     }

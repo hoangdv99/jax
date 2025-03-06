@@ -6,7 +6,15 @@
           <a :href="slotProps.data.url" target="_blank">{{ slotProps.data.url }}</a>
         </template>
       </Column>
-      <Column field="platform" header="Platform"></Column>
+      <Column field="platform" header="Platform">
+        <template #body="slotProps">
+          <div class="platform">
+            <img :src="getPlatformIcon(slotProps.data.platform)" :alt="getPlatformData(slotProps.data.platform)?.name"
+              class="icon">
+            <span>{{ getPlatformData(slotProps.data.platform)?.name }}</span>
+          </div>
+        </template>
+      </Column>
       <Column field="tags" header="Tags">
         <template #body="slotProps">
           <Tag v-for="tag in slotProps.data.tags" :key="tag.id" :value="tag.name" rounded severity="secondary"
@@ -34,14 +42,33 @@ import { useConfirm } from 'primevue/useconfirm'
 import { ref } from 'vue'
 import StoreDialog from './StoreDialog.vue'
 import type { Store } from '@/services/store/types'
+import { PLATFORM } from '@/constants/store'
+import shopifyIcon from '@/assets/icons/shopify.svg'
+import woocommerceIcon from '@/assets/icons/woocommerce.svg'
+import shopbaseIcon from '@/assets/icons/shopbase.svg'
 
 defineOptions({
   name: 'StoreTable',
 })
 
+const platformIcons = {
+  shopify: shopifyIcon,
+  woocommerce: woocommerceIcon,
+  shopbase: shopbaseIcon,
+}
+
+const getPlatformIcon = (platform: string) => {
+  return platformIcons[platform as keyof typeof platformIcons] || ''
+}
+
 const confirm = useConfirm()
 
-const props = defineProps(['stores'])
+const props = defineProps({
+  stores: {
+    type: Array,
+    default: () => [],
+  },
+})
 
 const showStoreDialog = ref(false)
 const selectedStore = ref()
@@ -70,6 +97,10 @@ function onDelete() {
   })
 }
 
+function getPlatformData(key: string) {
+  return Object.values(PLATFORM).find((platform) => platform.key === key)
+}
+
 </script>
 <style lang="scss" scoped>
 .store-table {
@@ -79,6 +110,15 @@ function onDelete() {
   }
   .no-data {
     text-align: center;
+  }
+  .platform {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .icon {
+    width: 16px;
+    height: 16px;
   }
 }
 

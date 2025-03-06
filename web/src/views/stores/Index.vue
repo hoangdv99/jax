@@ -7,7 +7,7 @@
       @click="showStoreDialog = true"
     />
     <StoreDialog :visible="showStoreDialog" @hide="showStoreDialog = false" />
-    <StoreTable class="table" />
+    <StoreTable :stores="storeStore.listStore" class="table" />
   </div>
 </template>
 <script setup lang="ts">
