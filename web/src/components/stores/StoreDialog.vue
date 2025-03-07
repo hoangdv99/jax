@@ -3,7 +3,7 @@
     class="store-dialog" @update:visible="$emit('hide')">
     <div class="field">
       <label for="url" class="label">URL</label>
-      <InputText id="url" v-model="store.url" :disabled="Boolean(originalStore)" autocomplete="off"
+      <InputText id="url" v-model="store.url" :disabled="originalStore.id" autocomplete="off"
         placeholder="Ex: https://example.com" class="input" />
     </div>
     <div class="field">
@@ -125,7 +125,7 @@ function startEdit(e: Event, tag: Tag) {
   selectedTag.value = tag
 }
 async function saveStore() {
-  if (Boolean(props.originalStore)) {
+  if (props.originalStore.id) {
     await updateStore()
   } else {
     await addStore()
@@ -144,6 +144,9 @@ async function addStore() {
       summary: 'Success',
       detail: 'Added store',
     })
+    store.id = null
+    store.url = ''
+    store.tags = []
     emit('hide')
   } else {
     toast.add({

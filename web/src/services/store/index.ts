@@ -34,6 +34,10 @@ function updateStore(id: number, payload: IUpdateStorePayload) {
   return api('put', `/v1/store/${id}`, payload)
 }
 
+function deleteStore(id: number) {
+  return api('delete', `/v1/store/${id}`)
+}
+
 export default {
   getListTag,
   createNewTag,
@@ -42,4 +46,5 @@ export default {
   addStore,
   getListStore,
   updateStore,
+  deleteStore,
 }

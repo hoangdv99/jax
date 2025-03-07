@@ -111,3 +111,24 @@ func (app *application) updateStoreHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Request) {
+	storeId, err := app.readIdParam(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	user := app.contextGetUser(r)
+
+	err = app.models.Stores.DeleteStore(user.Id, storeId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"message": "OK"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

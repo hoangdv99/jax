@@ -292,3 +292,36 @@ func (m StoreModel) UpdateStoreTags(storeId int64, tagIds []int64) error {
 
 	return nil
 }
+
+func (m StoreModel) DeleteStore(userId, storeId int64) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	tx, err := m.DB.Begin()
+	if err != nil {
+		return err
+	}
+
+	// Delete from user_tags
+	query := `DELETE FROM user_tags WHERE store_id = ?;`
+	_, err = tx.ExecContext(ctx, query, storeId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// Delete from user_stores
+	query = `DELETE FROM user_stores WHERE user_id = ? AND store_id = ?;`
+	_, err = tx.ExecContext(ctx, query, userId, storeId)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

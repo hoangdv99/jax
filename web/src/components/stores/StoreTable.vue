@@ -25,7 +25,7 @@
         <template #body="slotProps">
           <div class="action-wrapper">
             <Button icon="pi pi-pencil" variant="text" severity="secondary" @click="onUpdate(slotProps.data)"></Button>
-            <Button icon="pi pi-trash" variant="text" severity="danger" @click="onDelete"></Button>
+            <Button icon="pi pi-trash" variant="text" severity="danger" @click="onDelete(slotProps.data.id)"></Button>
           </div>
         </template>
       </Column>
@@ -39,6 +39,7 @@
 <script setup lang="ts">
 import { DataTable, Column, Button, Tag } from 'primevue'
 import { useConfirm } from 'primevue/useconfirm'
+import { useToast } from 'primevue/usetoast'
 import { ref } from 'vue'
 import StoreDialog from './StoreDialog.vue'
 import type { Store } from '@/services/store/types'
@@ -46,10 +47,14 @@ import { PLATFORM } from '@/constants/store'
 import shopifyIcon from '@/assets/icons/shopify.svg'
 import woocommerceIcon from '@/assets/icons/woocommerce.svg'
 import shopbaseIcon from '@/assets/icons/shopbase.svg'
+import { services } from '@/services'
+import { useStoreStore } from '@/stores/store'
 
 defineOptions({
   name: 'StoreTable',
 })
+
+const storeStore = useStoreStore()
 
 const platformIcons = {
   shopify: shopifyIcon,
@@ -62,6 +67,7 @@ const getPlatformIcon = (platform: string) => {
 }
 
 const confirm = useConfirm()
+const toast = useToast()
 
 const props = defineProps({
   stores: {
@@ -78,7 +84,7 @@ function onUpdate(store: Store) {
   showStoreDialog.value = true
 }
 
-function onDelete() {
+function onDelete(storeId: number) {
   confirm.require({
     header: 'Confirmation',
     message: 'Do you want to delete this store?',
@@ -93,7 +99,24 @@ function onDelete() {
       label: 'Delete',
       severity: 'danger',
     },
-    accept: async () => { },
+    accept: async () => {
+      const res = await services.store.deleteStore(storeId)
+      if (res.success) {
+        storeStore.getListStore()
+        toast.add({
+          severity: 'success',
+          summary: 'Success',
+          detail: 'Added store',
+        })
+        selectedStore.value = null
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Error',
+          detail: res.message?.name || 'Internal server error',
+        })
+      }
+    },
   })
 }
 
@@ -108,14 +131,17 @@ function getPlatformData(key: string) {
     margin-right: 8px;
     font-weight: 400;
   }
+
   .no-data {
     text-align: center;
   }
+
   .platform {
     display: flex;
     align-items: center;
     gap: 6px;
   }
+
   .icon {
     width: 16px;
     height: 16px;
