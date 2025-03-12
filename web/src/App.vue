@@ -24,6 +24,6 @@ const appStore = useAppStore()
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000;
+  z-index: 2000;
 }
 </style>

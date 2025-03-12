@@ -195,19 +195,19 @@ func (m StoreModel) UpdateUserStore(user *User, store *Store, tagIds []int64) er
 
 func (m StoreModel) List(userId int64) ([]Store, error) {
 	query := `
-		SELECT
-			s.id,
-			s.url,
-			s.platform,
-			s.is_active,
-			t.id,
-			t.name
-		FROM stores AS s
-		INNER JOIN user_stores AS us ON us.store_id = s.id
-		LEFT JOIN user_tags AS ut ON ut.store_id = s.id
-		INNER JOIN tags AS t ON ut.tag_id = t.id
-		WHERE us.user_id = ?;
-	`
+        SELECT
+            s.id,
+            s.url,
+            s.platform,
+            s.is_active,
+            COALESCE(t.id, 0) AS tag_id,
+            COALESCE(t.name, '') AS tag_name
+        FROM stores AS s
+        INNER JOIN user_stores AS us ON us.store_id = s.id
+        LEFT JOIN user_tags AS ut ON ut.store_id = s.id
+        LEFT JOIN tags AS t ON ut.tag_id = t.id
+        WHERE us.user_id = ?;
+    `
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	rows, err := m.DB.QueryContext(ctx, query, userId)
@@ -219,9 +219,10 @@ func (m StoreModel) List(userId int64) ([]Store, error) {
 	storeMap := make(map[int64]*Store)
 	for rows.Next() {
 		var storeId int64
-		var url, platform, tagName string
+		var url, platform string
 		var isActive bool
-		var tagId int64
+		var tagId sql.NullInt64
+		var tagName sql.NullString
 		err := rows.Scan(&storeId, &url, &platform, &isActive, &tagId, &tagName)
 		if err != nil {
 			return nil, err
@@ -237,10 +238,12 @@ func (m StoreModel) List(userId int64) ([]Store, error) {
 			}
 		}
 
-		storeMap[storeId].Tags = append(storeMap[storeId].Tags, Tag{
-			Id:   tagId,
-			Name: tagName,
-		})
+		if tagId.Int64 != 0 {
+			storeMap[storeId].Tags = append(storeMap[storeId].Tags, Tag{
+				Id:   tagId.Int64,
+				Name: tagName.String,
+			})
+		}
 	}
 
 	stores := make([]Store, 0, len(storeMap))

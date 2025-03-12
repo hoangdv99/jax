@@ -143,7 +143,7 @@ function getPlatformData(key: string) {
   }
 
   .icon {
-    width: 16px;
+    width: 32px;
     height: 16px;
   }
 }
