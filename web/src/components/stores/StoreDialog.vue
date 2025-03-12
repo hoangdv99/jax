@@ -152,7 +152,7 @@ async function addStore() {
     toast.add({
       severity: 'error',
       summary: 'Error',
-      detail: res.message?.name || 'Internal server error',
+      detail: res.message.name || res.message || 'Internal server error',
     })
   }
 }
