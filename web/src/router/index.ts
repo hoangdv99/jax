@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import DefaultLayout from '@/layout/Index.vue'
-import HomeView from '@/views/HomeView.vue'
+import HomePage from '@/views/home/Index.vue'
 import ListStore from '@/views/stores/Index.vue'
 import LoginPage from '@/views/login/Index.vue'
 import SignupPage from '@/views/signup/Index.vue'
@@ -41,7 +41,7 @@ const router = createRouter({
         {
           path: '',
           name: 'HomePage',
-          component: HomeView,
+          component: HomePage,
         },
         {
           path: 'stores',
