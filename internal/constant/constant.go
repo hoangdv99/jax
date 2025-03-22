@@ -15,31 +15,35 @@ const (
 )
 
 type Platform struct {
-	Type       string
-	ProductUrl string
-	LimitKey   string
-	PageKey    string
+	Type          string
+	ProductUrl    string
+	LimitKey      string
+	PageKey       string
+	CollectionUrl string
 }
 
 var WOOCOMMERCE = Platform{
-	Type:       "woocommerce",
-	ProductUrl: "/wp-json/wp/v2/product",
-	LimitKey:   "per_page",
-	PageKey:    "page",
+	Type:          "woocommerce",
+	ProductUrl:    "/wp-json/wp/v2/product",
+	LimitKey:      "per_page",
+	PageKey:       "page",
+	CollectionUrl: "/wp-json/wp/v2/categories",
 }
 
 var SHOPIFY = Platform{
-	Type:       "shopify",
-	ProductUrl: "/products.json",
-	LimitKey:   "limit",
-	PageKey:    "page",
+	Type:          "shopify",
+	ProductUrl:    "/products.json",
+	LimitKey:      "limit",
+	PageKey:       "page",
+	CollectionUrl: "/collections.json",
 }
 
 var SHOPBASE = Platform{
-	Type:       "shopbase",
-	ProductUrl: "/api/catalog/next/products.json",
-	LimitKey:   "limit",
-	PageKey:    "page",
+	Type:          "shopbase",
+	ProductUrl:    "/api/catalog/next/products.json",
+	LimitKey:      "limit",
+	PageKey:       "page",
+	CollectionUrl: "/api/catelog/next/collections.json",
 }
 
 var LIST_PLATFORM = []Platform{WOOCOMMERCE, SHOPIFY, SHOPBASE}

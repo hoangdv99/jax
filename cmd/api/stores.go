@@ -132,3 +132,28 @@ func (app *application) deleteStoreHandler(w http.ResponseWriter, r *http.Reques
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getCollectionsHandler(w http.ResponseWriter, r *http.Request) {
+	storeId, err := app.readIdParam(r)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	store, err := app.models.Stores.GetById(storeId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	collections, err := app.models.Stores.GetCollections(*store)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, envelop{"data": collections}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}

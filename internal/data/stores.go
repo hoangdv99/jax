@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -21,6 +22,13 @@ type Store struct {
 	Tags      []Tag     `json:"tags"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
+}
+
+type Collection struct {
+	Id           int64  `json:"id"`
+	Title        string `json:"title"`
+	Handle       string `json:"handle"`
+	ProductCount int64  `json:"productCount"`
 }
 
 type StoreModel struct {
@@ -327,4 +335,109 @@ func (m StoreModel) DeleteStore(userId, storeId int64) error {
 	}
 
 	return nil
+}
+
+func (m StoreModel) GetCollections(store Store) ([]Collection, error) {
+	url := fmt.Sprintf("%s/%s", store.Url, constant.SHOPIFY.CollectionUrl)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("User-Agent", constant.USER_AGENT)
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	if store.Platform == constant.SHOPIFY.Type {
+		return parseCollectionsResponseShopify(*res)
+	} else if store.Platform == constant.SHOPBASE.Type {
+		return parseCollectionsResponseShopbase(*res)
+	} else if store.Platform == constant.WOOCOMMERCE.Type {
+		return parseCollectionsResponseWoocommerce(*res)
+	}
+
+	return nil, nil
+}
+
+func parseCollectionsResponseShopify(res http.Response) ([]Collection, error) {
+	var response struct {
+		Collections []struct {
+			Id           int64  `json:"id"`
+			Title        string `json:"title"`
+			Handle       string `json:"handle"`
+			ProductCount int64  `json:"product_count"`
+		} `json:"collections"`
+	}
+
+	err := json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	collections := make([]Collection, 0, len(response.Collections))
+	for _, c := range response.Collections {
+		collections = append(collections, Collection{
+			Id:           c.Id,
+			Title:        c.Title,
+			Handle:       c.Handle,
+			ProductCount: c.ProductCount,
+		})
+	}
+	return collections, nil
+}
+
+func parseCollectionsResponseShopbase(res http.Response) ([]Collection, error) {
+	var response struct {
+		Result struct {
+			Items []struct {
+				Id           int64  `json:"id"`
+				Title        string `json:"title"`
+				Handle       string `json:"handle"`
+				ProductCount int64  `json:"product_count"`
+			} `json:"items"`
+		} `json:"result"`
+	}
+
+	err := json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	collections := make([]Collection, 0, len(response.Result.Items))
+	for _, c := range response.Result.Items {
+		collections = append(collections, Collection{
+			Id:           c.Id,
+			Title:        c.Title,
+			Handle:       c.Handle,
+			ProductCount: c.ProductCount,
+		})
+	}
+	return collections, nil
+}
+
+func parseCollectionsResponseWoocommerce(res http.Response) ([]Collection, error) {
+	var response []struct {
+		Id           int64  `json:"id"`
+		Title        string `json:"name"`
+		Handle       string `json:"slug"`
+		ProductCount int64  `json:"count"`
+	}
+	err := json.NewDecoder(res.Body).Decode(&response)
+	if err != nil {
+		return nil, err
+	}
+
+	collections := make([]Collection, 0, len(response))
+	for _, c := range response {
+		collections = append(collections, Collection{
+			Id:           c.Id,
+			Title:        c.Title,
+			Handle:       c.Handle,
+			ProductCount: c.ProductCount,
+		})
+	}
+	return collections, nil
 }
