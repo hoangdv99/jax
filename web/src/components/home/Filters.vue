@@ -4,11 +4,21 @@
       <label for="store" class="label">Store Url</label>
       <Select
         v-model="selectedStore"
-        :options="storeSelections"
+        :options="props.stores"
         filter
         input-id="store"
         optionLabel="url"
         placeholder="Select a store"
+        class="select"
+      />
+    </div>
+    <div class="item">
+      <label for="collection" class="label">Collection</label>
+      <Select
+        v-model="selectedCollection"
+        :options="props.collections"
+        input-id="collection"
+        option-label="title"
         class="select"
       />
     </div>
@@ -29,15 +39,22 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { ref, watch } from 'vue'
 import { Select, MultiSelect } from 'primevue'
+import type { Store } from '@/services/store/types'
 
 defineOptions({
   name: 'Filters',
 })
 
+const emit = defineEmits(['getListCollection'])
+
 const props = defineProps({
   stores: {
+    type: Array,
+    default: () => [],
+  },
+  collections: {
     type: Array,
     default: () => [],
   },
@@ -47,20 +64,39 @@ const props = defineProps({
   },
 })
 
-const storeSelections = computed(() => {
-  return [
-    {
-      id: null,
-      url: 'All',
-      platform: null,
-      tags: [],
-    },
-    ...props.stores,
-  ]
-})
-
-const selectedStore = ref(storeSelections.value[0])
+const selectedStore = ref<Store | null>(props.stores[0] as Store | null)
 const selectedTags = ref([])
+const selectedCollection = ref(props.collections[0])
+
+watch(
+  () => props.stores,
+  newStores => {
+    if (newStores.length) {
+      selectedStore.value = newStores[0] as Store
+    } else {
+      selectedStore.value = null
+    }
+  },
+  { immediate: true }
+)
+
+watch(
+  () => props.collections,
+  newCollections => {
+    if (newCollections.length) {
+      selectedCollection.value = newCollections[0]
+    } else {
+      selectedCollection.value = null
+    }
+  },
+  { immediate: true }
+)
+
+watch(selectedStore, (val: Store | null) => {
+  if (val) {
+    emit('getListCollection', val.id)
+  }
+})
 </script>
 <style lang="scss" scoped>
 .filters-container {

@@ -4,6 +4,7 @@ import type {
   IUpdateTagPayload,
   ICreateStorePayload,
   IUpdateStorePayload,
+  IGetListCollectionQueryParams,
 } from './types'
 
 function getListTag() {
@@ -38,6 +39,10 @@ function deleteStore(id: number) {
   return api('delete', `/v1/store/${id}`)
 }
 
+function getListCollection(id: number, queryParams?: IGetListCollectionQueryParams) {
+  return api('get', `/v1/store/${id}/collections`, queryParams)
+}
+
 export default {
   getListTag,
   createNewTag,
@@ -47,4 +52,5 @@ export default {
   getListStore,
   updateStore,
   deleteStore,
+  getListCollection,
 }

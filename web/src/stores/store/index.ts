@@ -1,11 +1,17 @@
 import { services } from '@/services'
-import type { Tag, Store } from '@/services/store/types'
+import type {
+  Tag,
+  Store,
+  IGetListCollectionQueryParams,
+  Collection,
+} from '@/services/store/types'
 import { defineStore } from 'pinia'
 
 export const useStoreStore = defineStore('storeStore', {
   state: () => ({
-    listTag: <Tag[]>{},
+    listTag: <Tag[]>[],
     listStore: <Store[]>[],
+    listCollection: <Collection[]>[],
   }),
   actions: {
     async getListTag() {
@@ -21,6 +27,27 @@ export const useStoreStore = defineStore('storeStore', {
         this.listStore = res.data.data
       }
       return res
-    }
+    },
+    async getListCollection(
+      storeId: number,
+      queryParams?: IGetListCollectionQueryParams
+    ) {
+      const res = await services.store.getListCollection(storeId, queryParams)
+      if (res.success) {
+        const defaultCollection = {
+          id: null,
+          title: 'All',
+          handle: '',
+          productCount: null,
+        }
+        this.listCollection = [
+          defaultCollection,
+          ...res.data.data,
+        ]
+      } else {
+        this.listCollection = []
+      }
+      return res
+    },
   },
 })

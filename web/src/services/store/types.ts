@@ -9,6 +9,13 @@ export type Store = {
   tags: Tag[]
 }
 
+export type Collection = {
+  id: number | null
+  title: string
+  handle: string
+  productCount: number,
+}
+
 export interface ICreateTagPayload {
   name: string
 }
@@ -24,4 +31,9 @@ export interface ICreateStorePayload {
 
 export interface IUpdateStorePayload {
   tagIds: number[]
+}
+
+export interface IGetListCollectionQueryParams {
+  limit: number
+  page: number
 }

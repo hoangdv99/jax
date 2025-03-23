@@ -1,16 +1,23 @@
 <template>
   <main class="home-page">
-    <Filters :stores="storeStore.listStore" :tags="storeStore.listTag" />
+    <Filters
+      :stores="storeStore.listStore"
+      :tags="storeStore.listTag"
+      :collections="storeStore.listCollection"
+      @get-list-collection="storeStore.getListCollection"
+    />
+    <ProductList />
   </main>
 </template>
 <script lang="ts" setup>
 import { onBeforeMount, onMounted } from 'vue'
 import Filters from '@/components/home/Filters.vue'
-import { services } from '../../services'
-import router from '../../router'
-import { useAccountStore } from '../../stores/account'
+import ProductList from '@/components/home/ProductList.vue'
+import { services } from '@/services'
+import router from '@/router'
+import { useAccountStore } from '@/stores/account'
 import { useStoreStore } from '@/stores/store'
-import { USER_STATUS } from '../../constants/user'
+import { USER_STATUS } from '@/constants/user'
 
 onBeforeMount(async () => {
   const token = localStorage.getItem('authToken')
