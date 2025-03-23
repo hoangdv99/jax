@@ -29,11 +29,11 @@ func (app *application) addStoreHandler(w http.ResponseWriter, r *http.Request) 
 
 	platform, err := app.models.Stores.GetStorePlatform(input.Url)
 	if err != nil {
-		app.badRequestResponse(w, r, errors.New("Invalid url or unsupported platform"))
+		app.badRequestResponse(w, r, errors.New("invalid url or unsupported platform"))
 		return
 	}
 
-	store, err := app.models.Stores.GetByUrl(input.Url)
+	store, _ := app.models.Stores.GetByUrl(input.Url)
 	user := app.contextGetUser(r)
 	if store == nil {
 		store := &data.Store{

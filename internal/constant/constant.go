@@ -15,35 +15,39 @@ const (
 )
 
 type Platform struct {
-	Type          string
-	ProductUrl    string
-	LimitKey      string
-	PageKey       string
-	CollectionUrl string
+	Type                 string
+	ProductUrl           string
+	LimitKey             string
+	PageKey              string
+	CollectionUrl        string
+	CollectionProductUrl string
 }
 
 var WOOCOMMERCE = Platform{
-	Type:          "woocommerce",
-	ProductUrl:    "/wp-json/wp/v2/product",
-	LimitKey:      "per_page",
-	PageKey:       "page",
-	CollectionUrl: "/wp-json/wp/v2/categories",
+	Type:                 "woocommerce",
+	ProductUrl:           "/wp-json/wp/v2/product",
+	LimitKey:             "per_page",
+	PageKey:              "page",
+	CollectionUrl:        "/wp-json/wp/v2/product_cat",
+	CollectionProductUrl: "/wp-json/wp/v2/product?product_cat=%d&page=%d&limit=%d",
 }
 
 var SHOPIFY = Platform{
-	Type:          "shopify",
-	ProductUrl:    "/products.json",
-	LimitKey:      "limit",
-	PageKey:       "page",
-	CollectionUrl: "/collections.json",
+	Type:                 "shopify",
+	ProductUrl:           "/products.json",
+	LimitKey:             "limit",
+	PageKey:              "page",
+	CollectionUrl:        "/collections.json",
+	CollectionProductUrl: "/collections/%s/products.json?page=%d&limit=%d",
 }
 
 var SHOPBASE = Platform{
-	Type:          "shopbase",
-	ProductUrl:    "/api/catalog/next/products.json",
-	LimitKey:      "limit",
-	PageKey:       "page",
-	CollectionUrl: "/api/catelog/next/collections.json",
+	Type:                 "shopbase",
+	ProductUrl:           "/api/catalog/next/products.json",
+	LimitKey:             "limit",
+	PageKey:              "page",
+	CollectionUrl:        "/api/catalog/next/collections.json",
+	CollectionProductUrl: "/api/catalog/next/products.json?collectionIds=%d&limit=%d&page=%d",
 }
 
 var LIST_PLATFORM = []Platform{WOOCOMMERCE, SHOPIFY, SHOPBASE}

@@ -98,7 +98,7 @@ func (app *application) updateTagHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	v := validator.New()
-	existedTag, err := app.models.Tags.GetByName(*input.Name)
+	existedTag, _ := app.models.Tags.GetByName(*input.Name)
 	if existedTag != nil && existedTag.Id != id {
 		v.AddError("name", "duplicated tag")
 		app.failedValidationResponse(w, r, v.Errors)
@@ -152,4 +152,7 @@ func (app *application) deleteTagHandler(w http.ResponseWriter, r *http.Request)
 	}
 
 	err = app.writeJSON(w, http.StatusOK, envelop{"message": "OK"}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 }

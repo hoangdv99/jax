@@ -43,6 +43,7 @@ func (app *application) routes() http.Handler {
 	protectedRouter.HandlerFunc(http.MethodDelete, "/v1/tag/:id", app.deleteTagHandler)
 
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/products", app.getProductsHandler)
+	protectedRouter.HandlerFunc(http.MethodGet, "/v1/store/:id/collections/products", app.getCollectionProductsHandler)
 
 	router := http.NewServeMux()
 	router.Handle("/", publicRouter)

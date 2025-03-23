@@ -116,6 +116,45 @@ func (m ProductModel) getStoresByIds(userId int64, storeIds []int64) ([]Store, e
 	return stores, nil
 }
 
+func (m ProductModel) GetCollectionProducts(store Store, collectionId int64, handle string, page, limit int) ([]Product, error) {
+	var platform constant.Platform
+	for _, p := range constant.LIST_PLATFORM {
+		if p.Type == store.Platform {
+			platform = p
+			break
+		}
+	}
+
+	urlFormat := store.Url + platform.CollectionProductUrl
+	var url string
+	if platform.Type == "shopify" {
+		url = fmt.Sprintf(urlFormat, handle, page, limit)
+	} else {
+		url = fmt.Sprintf(urlFormat, collectionId, page, limit)
+	}
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("User-Agent", constant.USER_AGENT)
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+
+	var products []Product
+	err = parseResponseBody(store.Url, res.Body, store.Platform, &products)
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}
+
 func parseResponseBody(storeUrl string, body io.Reader, platform string, products *[]Product) error {
 	if platform == "shopify" {
 		return parseProductsShopify(storeUrl, body, products)
