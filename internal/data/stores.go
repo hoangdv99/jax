@@ -337,8 +337,8 @@ func (m StoreModel) DeleteStore(userId, storeId int64) error {
 	return nil
 }
 
-func (m StoreModel) GetCollections(store Store) ([]Collection, error) {
-	url := fmt.Sprintf("%s/%s", store.Url, constant.SHOPIFY.CollectionUrl)
+func (m StoreModel) GetCollections(store Store, page, limit int) ([]Collection, error) {
+	url := fmt.Sprintf("%s/%s?page=%d&limit=%d", store.Url, constant.SHOPIFY.CollectionUrl, page, limit)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

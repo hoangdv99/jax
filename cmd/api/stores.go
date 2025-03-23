@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"jax.hoangdv99/internal/data"
 	"jax.hoangdv99/internal/validator"
@@ -140,13 +141,25 @@ func (app *application) getCollectionsHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
+	queryParams := r.URL.Query()
+	page := queryParams.Get("page")
+	if page == "" {
+		page = "1"
+	}
+	limit := queryParams.Get("limit")
+	if limit == "" {
+		limit = "30"
+	}
+	pageInt, _ := strconv.Atoi(page)
+	limitInt, _ := strconv.Atoi(limit)
+
 	store, err := app.models.Stores.GetById(storeId)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
 
-	collections, err := app.models.Stores.GetCollections(*store)
+	collections, err := app.models.Stores.GetCollections(*store, pageInt, limitInt)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
