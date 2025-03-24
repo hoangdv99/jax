@@ -338,7 +338,15 @@ func (m StoreModel) DeleteStore(userId, storeId int64) error {
 }
 
 func (m StoreModel) GetCollections(store Store, page, limit int) ([]Collection, error) {
-	url := fmt.Sprintf("%s/%s?page=%d&limit=%d", store.Url, constant.SHOPIFY.CollectionUrl, page, limit)
+	var platform constant.Platform
+	for _, p := range constant.LIST_PLATFORM {
+		if p.Type == store.Platform {
+			platform = p
+			break
+		}
+	}
+
+	url := fmt.Sprintf("%s/%s?page=%d&limit=%d", store.Url, platform.CollectionUrl, page, limit)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
