@@ -1,7 +1,7 @@
 <template>
   <div class="filters-container">
     <div class="item">
-      <label for="store" class="label">Store Url</label>
+      <label class="label">Store Url</label>
       <Select
         v-model="selectedStore"
         :options="props.stores"
@@ -13,17 +13,18 @@
       />
     </div>
     <div class="item">
-      <label for="collection" class="label">Collection</label>
+      <label class="label">Collection</label>
       <Select
         v-model="selectedCollection"
         :options="props.collections"
         input-id="collection"
         option-label="title"
         class="select"
+        @show="onShowDropdown"
       />
     </div>
     <div class="item">
-      <label for="tag" class="label">Tags</label>
+      <label class="label">Tags</label>
       <MultiSelect
         v-model="selectedTags"
         :options="props.tags"
@@ -39,9 +40,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { Select, MultiSelect } from 'primevue'
 import type { Store } from '@/services/store/types'
+import { useStoreStore } from '@/stores/store'
 
 defineOptions({
   name: 'Filters',
@@ -64,9 +66,12 @@ const props = defineProps({
   },
 })
 
+const storeStore = useStoreStore()
+
 const selectedStore = ref<Store | null>(props.stores[0] as Store | null)
 const selectedTags = ref([])
 const selectedCollection = ref(props.collections[0])
+const collectionPage = ref(1)
 
 watch(
   () => props.stores,
@@ -94,9 +99,30 @@ watch(
 
 watch(selectedStore, (val: Store | null) => {
   if (val) {
+    collectionPage.value = 1
+    storeStore.resetAllCollectionsFetchedFlag()
     emit('getListCollection', val.id)
   }
 })
+
+function onShowDropdown() {
+  nextTick(() => {
+    const panel = window.document.querySelector('.p-select-list-container')
+    if (panel) {
+      panel.addEventListener('scroll', onScrollToEnd)
+    }
+  })
+}
+
+function onScrollToEnd(event: Event) {
+  const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLElement
+  if (scrollTop + clientHeight >= scrollHeight && !storeStore.allCollectionsFetched) {
+    emit('getListCollection', selectedStore.value?.id, {
+      page: collectionPage.value + 1,
+    })
+    collectionPage.value += 1
+  }
+}
 </script>
 <style lang="scss" scoped>
 .filters-container {

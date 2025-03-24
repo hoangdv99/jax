@@ -15,7 +15,10 @@ export const api = async (
   params?: any
 ) => {
   try {
-    const res = await (instance as any)[methodType](endpoint, params)
+    const res = await (instance as any)[methodType](
+      endpoint,
+      methodType === 'get' ? { params } : params
+    )
     return {
       ...res,
       success: true,

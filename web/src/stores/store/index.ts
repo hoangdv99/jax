@@ -12,6 +12,7 @@ export const useStoreStore = defineStore('storeStore', {
     listTag: <Tag[]>[],
     listStore: <Store[]>[],
     listCollection: <Collection[]>[],
+    allCollectionsFetched: false,
   }),
   actions: {
     async getListTag() {
@@ -34,20 +35,27 @@ export const useStoreStore = defineStore('storeStore', {
     ) {
       const res = await services.store.getListCollection(storeId, queryParams)
       if (res.success) {
-        const defaultCollection = {
-          id: null,
-          title: 'All',
-          handle: '',
-          productCount: null,
+        if (!queryParams?.page || queryParams.page === 1) {
+          const defaultCollection = {
+            id: null,
+            title: 'All',
+            handle: '',
+            productCount: null,
+          }
+          this.listCollection = [defaultCollection, ...res.data.data]
+        } else {
+          this.listCollection = [...this.listCollection, ...res.data.data]
         }
-        this.listCollection = [
-          defaultCollection,
-          ...res.data.data,
-        ]
+        if (res.data.data.length === 0) {
+          this.allCollectionsFetched = true
+        }
       } else {
         this.listCollection = []
       }
       return res
+    },
+    resetAllCollectionsFetchedFlag() {
+      this.allCollectionsFetched = false
     },
   },
 })
