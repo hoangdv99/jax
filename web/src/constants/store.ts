@@ -17,3 +17,4 @@ export const PLATFORM = {
 }
 
 export const PRODUCT_PAGE_LIMIT = 30
+export const COLLECTION_PAGE_LIMIT = 30

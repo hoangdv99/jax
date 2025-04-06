@@ -1,3 +1,4 @@
+import { defineStore } from 'pinia'
 import { services } from '@/services'
 import type {
   Tag,
@@ -8,14 +9,12 @@ import type {
   IGetCollectionProductsQueryParams,
   IGetProductsQueryParams,
 } from '@/services/store/types'
-import { defineStore } from 'pinia'
 
 export const useStoreStore = defineStore('storeStore', {
   state: () => ({
     listTag: <Tag[]>[],
     listStore: <Store[]>[],
     listCollection: <Collection[]>[],
-    allCollectionsFetched: false,
     listProduct: <Product[]>[],
   }),
   actions: {
@@ -50,16 +49,10 @@ export const useStoreStore = defineStore('storeStore', {
         } else {
           this.listCollection = [...this.listCollection, ...res.data.data]
         }
-        if (res.data.data.length === 0) {
-          this.allCollectionsFetched = true
-        }
       } else {
         this.listCollection = []
       }
       return res
-    },
-    resetAllCollectionsFetchedFlag() {
-      this.allCollectionsFetched = false
     },
     async getCollectionProducts(
       queryParams: IGetCollectionProductsQueryParams
@@ -72,6 +65,7 @@ export const useStoreStore = defineStore('storeStore', {
           this.listProduct = [...this.listProduct, ...res.data.products]
         }
       }
+      return res
     },
     async getProducts(queryParams: IGetProductsQueryParams) {
       const res = await services.store.getProducts(queryParams)
@@ -82,6 +76,7 @@ export const useStoreStore = defineStore('storeStore', {
           this.listProduct = [...this.listProduct, ...res.data.products]
         }
       }
+      return res
     },
   },
 })

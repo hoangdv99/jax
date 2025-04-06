@@ -3,30 +3,32 @@
     <div class="item">
       <label class="label">Store Url</label>
       <Select
-        v-model="selectedStore"
+        :model-value="props.selectedStore"
         :options="props.stores"
         filter
         input-id="store"
         optionLabel="url"
         placeholder="Select a store"
         class="select"
+        @update:model-value="emit('updateSelectedStore', $event)"
       />
     </div>
     <div class="item">
       <label class="label">Collection</label>
       <Select
-        v-model="selectedCollection"
+        :model-value="props.selectedCollection"
         :options="props.collections"
         input-id="collection"
         option-label="title"
         class="select"
         @show="onShowDropdown"
+        @update:model-value="emit('updateSelectedCollection', $event)"
       />
     </div>
     <div class="item">
       <label class="label">Tags</label>
       <MultiSelect
-        v-model="selectedTags"
+        v-model="props.selectedTags"
         :options="props.tags"
         :show-toggle-all="false"
         display="chip"
@@ -40,11 +42,10 @@
   </div>
 </template>
 <script setup lang="ts">
-import { nextTick, ref, watch } from 'vue'
+import { nextTick, type PropType } from 'vue'
 import { Select, MultiSelect } from 'primevue'
-import type { Collection, Store } from '@/services/store/types'
+import type { Collection, Store, Tag } from '@/services/store/types'
 import { useStoreStore } from '@/stores/store'
-import { PRODUCT_PAGE_LIMIT } from '@/constants/store'
 
 defineOptions({
   name: 'Filters',
@@ -52,8 +53,9 @@ defineOptions({
 
 const emit = defineEmits([
   'getListCollection',
-  'getCollectionProducts',
-  'getProducts',
+  'updateCollectionPage',
+  'updateSelectedStore',
+  'updateSelectedCollection',
 ])
 
 const props = defineProps({
@@ -69,66 +71,27 @@ const props = defineProps({
     type: Array,
     default: () => [],
   },
+  selectedStore: {
+    type: Object as PropType<Store>,
+  },
+  selectedTags: {
+    type: Array as PropType<Tag[]>,
+    default: () => [],
+  },
+  selectedCollection: {
+    type: Object as PropType<Collection>,
+  },
+  collectionPage: {
+    type: Number,
+    default: 1,
+  },
+  allCollectionsFetched: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const storeStore = useStoreStore()
-
-const selectedStore = ref<Store | null>(props.stores[0] as Store | null)
-const selectedTags = ref([])
-const selectedCollection = ref<Collection | null>(
-  props.collections[0] as Collection | null
-)
-const collectionPage = ref(1)
-
-watch(
-  () => props.stores,
-  newStores => {
-    if (newStores.length) {
-      selectedStore.value = newStores[0] as Store
-    } else {
-      selectedStore.value = null
-    }
-  },
-  { immediate: true }
-)
-
-watch(
-  () => props.collections,
-  newCollections => {
-    if (newCollections.length) {
-      selectedCollection.value = newCollections[0] as Collection
-    } else {
-      selectedCollection.value = null
-    }
-  },
-  { immediate: true }
-)
-
-watch(selectedStore, (val: Store | null) => {
-  if (val) {
-    collectionPage.value = 1
-    storeStore.resetAllCollectionsFetchedFlag()
-    emit('getListCollection', val.id)
-  }
-})
-
-watch(selectedCollection, (val: Collection | null) => {
-  if (val?.handle && selectedStore.value) {
-    emit('getCollectionProducts', {
-      storeId: selectedStore.value.id,
-      collectionId: val.id,
-      handle: val.handle,
-      page: 1,
-      limit: PRODUCT_PAGE_LIMIT,
-    })
-  } else if (val?.title === 'All' && selectedStore.value) {
-    emit('getProducts', {
-      storeIds: selectedStore.value.id,
-      page: 1,
-      limit: PRODUCT_PAGE_LIMIT,
-    })
-  }
-})
 
 function onShowDropdown() {
   nextTick(() => {
@@ -142,13 +105,14 @@ function onShowDropdown() {
 function onScrollToEnd(event: Event) {
   const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLElement
   if (
-    scrollTop + clientHeight >= scrollHeight - 3 &&
-    !storeStore.allCollectionsFetched
+    scrollTop + clientHeight >= scrollHeight &&
+    !props.allCollectionsFetched &&
+    props.selectedStore?.id
   ) {
-    emit('getListCollection', selectedStore.value?.id, {
-      page: collectionPage.value + 1,
+    emit('getListCollection', props.selectedStore.id, {
+      page: props.collectionPage + 1,
     })
-    collectionPage.value += 1
+    emit('updateCollectionPage', props.collectionPage + 1)
   }
 }
 </script>

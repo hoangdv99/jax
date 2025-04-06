@@ -10,7 +10,7 @@ export type Store = {
 }
 
 export type Collection = {
-  id: number | null
+  id: number | undefined
   title: string
   handle: string
   productCount: number
@@ -50,14 +50,14 @@ export interface IGetListCollectionQueryParams {
 
 export interface IGetCollectionProductsQueryParams {
   storeId: number
-  collectionId: number
-  handle: string
+  collectionId?: number
+  handle?: string
   page?: number
   limit?: number
 }
 
 export interface IGetProductsQueryParams {
-  storeIds: number[]
+  storeIds: number | string | null
   page?: number
   limit?: number
 }
