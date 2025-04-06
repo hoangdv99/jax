@@ -57,6 +57,12 @@ const showThumbnailNavigators = computed(
 .product-card {
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
   width: 250px;
+  :deep(.p-galleria-thumbnails-viewport) {
+    width: fit-content;
+  }
+  :deep(.p-galleria-thumbnail-items) {
+    gap: 8px;
+  }
   .image {
     width: 250px;
     height: 250px;

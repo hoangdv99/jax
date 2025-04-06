@@ -45,7 +45,6 @@
 import { nextTick, type PropType } from 'vue'
 import { Select, MultiSelect } from 'primevue'
 import type { Collection, Store, Tag } from '@/services/store/types'
-import { useStoreStore } from '@/stores/store'
 
 defineOptions({
   name: 'Filters',
@@ -90,8 +89,6 @@ const props = defineProps({
     default: false,
   },
 })
-
-const storeStore = useStoreStore()
 
 function onShowDropdown() {
   nextTick(() => {
