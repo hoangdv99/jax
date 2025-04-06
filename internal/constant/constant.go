@@ -29,7 +29,7 @@ var WOOCOMMERCE = Platform{
 	LimitKey:             "per_page",
 	PageKey:              "page",
 	CollectionUrl:        "/wp-json/wp/v2/product_cat",
-	CollectionProductUrl: "/wp-json/wp/v2/product?product_cat=%d&page=%d&limit=%d",
+	CollectionProductUrl: "/wp-json/wp/v2/product?product_cat=%d&page=%d&per_page=%d",
 }
 
 var SHOPIFY = Platform{
@@ -47,7 +47,7 @@ var SHOPBASE = Platform{
 	LimitKey:             "limit",
 	PageKey:              "page",
 	CollectionUrl:        "/api/catalog/next/collections.json",
-	CollectionProductUrl: "/api/catalog/next/products.json?collectionIds=%d&limit=%d&page=%d",
+	CollectionProductUrl: "/api/catalog/next/products.json?collection_ids=%d&page=%d&limit=%d",
 }
 
 var LIST_PLATFORM = []Platform{WOOCOMMERCE, SHOPIFY, SHOPBASE}
