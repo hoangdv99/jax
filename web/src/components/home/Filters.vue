@@ -42,14 +42,19 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { Select, MultiSelect } from 'primevue'
-import type { Store } from '@/services/store/types'
+import type { Collection, Store } from '@/services/store/types'
 import { useStoreStore } from '@/stores/store'
+import { PRODUCT_PAGE_LIMIT } from '@/constants/store'
 
 defineOptions({
   name: 'Filters',
 })
 
-const emit = defineEmits(['getListCollection'])
+const emit = defineEmits([
+  'getListCollection',
+  'getCollectionProducts',
+  'getProducts',
+])
 
 const props = defineProps({
   stores: {
@@ -70,7 +75,9 @@ const storeStore = useStoreStore()
 
 const selectedStore = ref<Store | null>(props.stores[0] as Store | null)
 const selectedTags = ref([])
-const selectedCollection = ref(props.collections[0])
+const selectedCollection = ref<Collection | null>(
+  props.collections[0] as Collection | null
+)
 const collectionPage = ref(1)
 
 watch(
@@ -89,7 +96,7 @@ watch(
   () => props.collections,
   newCollections => {
     if (newCollections.length) {
-      selectedCollection.value = newCollections[0]
+      selectedCollection.value = newCollections[0] as Collection
     } else {
       selectedCollection.value = null
     }
@@ -105,6 +112,24 @@ watch(selectedStore, (val: Store | null) => {
   }
 })
 
+watch(selectedCollection, (val: Collection | null) => {
+  if (val?.handle && selectedStore.value) {
+    emit('getCollectionProducts', {
+      storeId: selectedStore.value.id,
+      collectionId: val.id,
+      handle: val.handle,
+      page: 1,
+      limit: PRODUCT_PAGE_LIMIT,
+    })
+  } else if (val?.title === 'All' && selectedStore.value) {
+    emit('getProducts', {
+      storeIds: selectedStore.value.id,
+      page: 1,
+      limit: PRODUCT_PAGE_LIMIT,
+    })
+  }
+})
+
 function onShowDropdown() {
   nextTick(() => {
     const panel = window.document.querySelector('.p-select-list-container')
@@ -116,7 +141,10 @@ function onShowDropdown() {
 
 function onScrollToEnd(event: Event) {
   const { scrollTop, scrollHeight, clientHeight } = event.target as HTMLElement
-  if (scrollTop + clientHeight >= scrollHeight && !storeStore.allCollectionsFetched) {
+  if (
+    scrollTop + clientHeight >= scrollHeight - 3 &&
+    !storeStore.allCollectionsFetched
+  ) {
     emit('getListCollection', selectedStore.value?.id, {
       page: collectionPage.value + 1,
     })

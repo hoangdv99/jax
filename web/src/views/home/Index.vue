@@ -4,9 +4,12 @@
       :stores="storeStore.listStore"
       :tags="storeStore.listTag"
       :collections="storeStore.listCollection"
+      class="filters"
       @get-list-collection="storeStore.getListCollection"
+      @get-products="storeStore.getProducts"
+      @get-collection-products="storeStore.getCollectionProducts"
     />
-    <ProductList />
+    <ProductList :products="storeStore.listProduct" />
   </main>
 </template>
 <script lang="ts" setup>
@@ -44,3 +47,10 @@ onMounted(async () => {
   storeStore.getListStore()
 })
 </script>
+<style lang="scss" scoped>
+.home-page {
+  > .filters {
+    margin-bottom: 16px;
+  }
+}
+</style>

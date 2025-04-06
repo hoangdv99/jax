@@ -2,8 +2,11 @@ import { services } from '@/services'
 import type {
   Tag,
   Store,
-  IGetListCollectionQueryParams,
   Collection,
+  Product,
+  IGetListCollectionQueryParams,
+  IGetCollectionProductsQueryParams,
+  IGetProductsQueryParams,
 } from '@/services/store/types'
 import { defineStore } from 'pinia'
 
@@ -13,6 +16,7 @@ export const useStoreStore = defineStore('storeStore', {
     listStore: <Store[]>[],
     listCollection: <Collection[]>[],
     allCollectionsFetched: false,
+    listProduct: <Product[]>[],
   }),
   actions: {
     async getListTag() {
@@ -56,6 +60,28 @@ export const useStoreStore = defineStore('storeStore', {
     },
     resetAllCollectionsFetchedFlag() {
       this.allCollectionsFetched = false
+    },
+    async getCollectionProducts(
+      queryParams: IGetCollectionProductsQueryParams
+    ) {
+      const res = await services.store.getCollectionProducts(queryParams)
+      if (res.success) {
+        if (!queryParams.page || queryParams.page === 1) {
+          this.listProduct = res.data.products
+        } else {
+          this.listProduct = [...this.listProduct, ...res.data.products]
+        }
+      }
+    },
+    async getProducts(queryParams: IGetProductsQueryParams) {
+      const res = await services.store.getProducts(queryParams)
+      if (res.success) {
+        if (!queryParams.page || queryParams.page === 1) {
+          this.listProduct = res.data.products
+        } else {
+          this.listProduct = [...this.listProduct, ...res.data.products]
+        }
+      }
     },
   },
 })

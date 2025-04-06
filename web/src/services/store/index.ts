@@ -5,6 +5,8 @@ import type {
   ICreateStorePayload,
   IUpdateStorePayload,
   IGetListCollectionQueryParams,
+  IGetCollectionProductsQueryParams,
+  IGetProductsQueryParams,
 } from './types'
 
 function getListTag() {
@@ -39,8 +41,20 @@ function deleteStore(id: number) {
   return api('delete', `/v1/store/${id}`)
 }
 
-function getListCollection(id: number, queryParams?: IGetListCollectionQueryParams) {
+function getListCollection(
+  id: number,
+  queryParams?: IGetListCollectionQueryParams
+) {
   return api('get', `/v1/store/${id}/collections`, queryParams)
+}
+
+function getProducts(queryParams: IGetProductsQueryParams) {
+  return api('get', '/v1/products', queryParams)
+}
+
+function getCollectionProducts(queryParams: IGetCollectionProductsQueryParams) {
+  const { storeId, ...query } = queryParams
+  return api('get', `/v1/store/${storeId}/collections/products`, query)
 }
 
 export default {
@@ -53,4 +67,6 @@ export default {
   updateStore,
   deleteStore,
   getListCollection,
+  getCollectionProducts,
+  getProducts,
 }

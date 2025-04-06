@@ -15,3 +15,5 @@ export const PLATFORM = {
 		icon: 'shopbase.png',
 	}
 }
+
+export const PRODUCT_PAGE_LIMIT = 30

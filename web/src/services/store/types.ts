@@ -13,7 +13,17 @@ export type Collection = {
   id: number | null
   title: string
   handle: string
-  productCount: number,
+  productCount: number
+}
+
+export type Product = {
+  id: number
+  storeUrl: string
+  price: string
+  images: string[]
+  createdDate: string
+  sourcePostUrl: string
+  featureMedia: number
 }
 
 export interface ICreateTagPayload {
@@ -36,4 +46,18 @@ export interface IUpdateStorePayload {
 export interface IGetListCollectionQueryParams {
   limit: number
   page: number
+}
+
+export interface IGetCollectionProductsQueryParams {
+  storeId: number
+  collectionId: number
+  handle: string
+  page?: number
+  limit?: number
+}
+
+export interface IGetProductsQueryParams {
+  storeIds: number[]
+  page?: number
+  limit?: number
 }
