@@ -40,7 +40,7 @@ const onScroll = (event: Event) => {
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-  height: calc(100vh - 140px);
+  max-height: calc(100vh - 140px);
   overflow: auto;
 }
 </style>

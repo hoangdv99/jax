@@ -96,6 +96,7 @@ watch(selectedStore, async (val: Store | undefined) => {
       page: 1,
       limit: COLLECTION_PAGE_LIMIT,
     })
+    selectedCollection.value = storeStore.listCollection[0]
     if (res.success && res.data.data.length < COLLECTION_PAGE_LIMIT) {
       allCollectionsFetched.value = true
     }
