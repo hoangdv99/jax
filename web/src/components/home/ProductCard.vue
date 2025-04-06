@@ -26,6 +26,7 @@
         iconPos="right"
         size="small"
         variant="text"
+        @click="openSourcePost"
       />
     </div>
   </div>
@@ -52,6 +53,9 @@ const numVisible = 4
 const showThumbnailNavigators = computed(
   () => props.product.images.length > numVisible
 )
+const openSourcePost = () => {
+  window.open(props.product.sourcePostUrl, '_blank')
+}
 </script>
 <style lang="scss" scoped>
 .product-card {

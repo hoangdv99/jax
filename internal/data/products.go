@@ -205,7 +205,7 @@ func parseProductsShopify(storeUrl string, body io.Reader, products *[]Product) 
 			Price:         p.Variants[0].Price,
 			Images:        imageUrls,
 			CreatedDate:   createdDate,
-			SourcePostUrl: storeUrl + "/products" + p.Handle,
+			SourcePostUrl: storeUrl + "/products/" + p.Handle,
 		}
 		*products = append(*products, product)
 	}
@@ -250,7 +250,7 @@ func parseProductsShopbase(storeUrl string, body io.Reader, products *[]Product)
 			Price:         strconv.FormatFloat(p.Variants[0].Price, 'f', 2, 64),
 			Images:        imageUrls,
 			CreatedDate:   createdDate,
-			SourcePostUrl: storeUrl + "/products" + p.Handle,
+			SourcePostUrl: storeUrl + "/products/" + p.Handle,
 		}
 		*products = append(*products, product)
 	}
