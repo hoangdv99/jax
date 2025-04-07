@@ -1,8 +1,10 @@
 <template>
   <div class="product-card">
     <Galleria
+      v-if="product.images.length"
       :value="product.images"
       :num-visible="numVisible"
+      :show-thumbnails="showThumbnails"
       :show-thumbnail-navigators="showThumbnailNavigators"
       class="galleria"
     >
@@ -13,9 +15,15 @@
         <img :src="slotProps.item" class="thumb" />
       </template>
     </Galleria>
+    <Skeleton
+      v-else
+      class="image"
+      width="250px"
+      height="250px"
+    />
     <div class="content">
       <div class="wrapper">
-        <div class="price">${{ product.price }}</div>
+        <div v-if="product.price" class="price">${{ product.price }}</div>
         <div class="date">
           {{ format(new Date(product.createdDate), 'yyyy-MM-dd') }}
         </div>
@@ -32,10 +40,12 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { computed, type PropType } from 'vue'
-import { Galleria, Button } from 'primevue'
+import axios from 'axios'
+import { computed, watch, type PropType } from 'vue'
+import { Galleria, Button, Skeleton } from 'primevue'
 import { format } from 'date-fns'
 import type { Product } from '@/services/store/types'
+import { PLATFORM } from '@/constants/store'
 
 defineOptions({
   name: 'ProductCard',
@@ -46,6 +56,10 @@ const props = defineProps({
     type: Object as PropType<Product>,
     default: () => ({}),
   },
+  platform: {
+    type: String,
+    default: '',
+  },
 })
 
 const numVisible = 4
@@ -53,9 +67,31 @@ const numVisible = 4
 const showThumbnailNavigators = computed(
   () => props.product.images.length > numVisible
 )
+const showThumbnails = computed(() => props.product.images.length > 1)
 const openSourcePost = () => {
   window.open(props.product.sourcePostUrl, '_blank')
 }
+const getWoocommerceProductImage = async () => {
+  if (!props.product.featureMedia) {
+    return
+  }
+  const res = await axios.get(
+    `${props.product.storeUrl}/wp-json/wp/v2/media/${props.product.featureMedia}`
+  )
+  if (res.data && res.data.source_url) {
+    props.product.images = [res.data.source_url]
+  }
+}
+
+watch(
+  () => props.product.featureMedia,
+  val => {
+    if (val && props.platform === PLATFORM.WOOCOMMERCE.key) {
+      getWoocommerceProductImage()
+    }
+  },
+  { immediate: true }
+)
 </script>
 <style lang="scss" scoped>
 .product-card {

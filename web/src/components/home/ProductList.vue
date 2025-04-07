@@ -4,6 +4,7 @@
       v-for="product in props.products"
       :key="product.id"
       :product="product"
+      :platform="props.platform"
     />
   </div>
 </template>
@@ -20,6 +21,10 @@ const props = defineProps({
   products: {
     type: Array as PropType<Product[]>,
     default: () => [],
+  },
+  platform: {
+    type: String,
+    default: '',
   },
 })
 

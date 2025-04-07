@@ -17,6 +17,7 @@
     />
     <ProductList
       :products="storeStore.listProduct"
+      :platform="selectedStore?.platform"
       class="products"
       @load-more-products="onLoadMoreProducts"
     />

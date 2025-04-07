@@ -6,6 +6,7 @@ export type Tag = {
 export type Store = {
   id: number | null
   url: string
+  platform: string
   tags: Tag[]
 }
 
