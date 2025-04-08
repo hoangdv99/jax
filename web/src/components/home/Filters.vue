@@ -28,7 +28,7 @@
     <div class="item">
       <label class="label">Tags</label>
       <MultiSelect
-        v-model="props.selectedTags"
+        :model-value="props.selectedTags"
         :options="props.tags"
         :show-toggle-all="false"
         display="chip"
@@ -37,6 +37,7 @@
         optionLabel="name"
         placeholder="Select tags"
         class="select"
+        @update:model-value="emit('updateSelectedTags', $event)"
       />
     </div>
   </div>
@@ -55,6 +56,7 @@ const emit = defineEmits([
   'updateCollectionPage',
   'updateSelectedStore',
   'updateSelectedCollection',
+  'updateSelectedTags',
 ])
 
 const props = defineProps({

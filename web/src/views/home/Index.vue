@@ -4,7 +4,7 @@
       :selected-store="selectedStore"
       :selected-tags="selectedTags"
       :selected-collection="selectedCollection"
-      :stores="storeStore.listStore"
+      :stores="listStore"
       :collection-page="collectionPage"
       :tags="storeStore.listTag"
       :collections="storeStore.listCollection"
@@ -14,6 +14,7 @@
       @update-collection-page="updateCollectionPage"
       @update-selected-store="selectedStore = $event"
       @update-selected-collection="selectedCollection = $event"
+      @update-selected-tags="selectedTags = $event"
     />
     <ProductList
       :products="storeStore.listProduct"
@@ -55,6 +56,8 @@ onBeforeMount(async () => {
 
 const storeStore = useStoreStore()
 
+const listStore = ref<Store[]>([])
+
 const selectedStore = ref<Store | undefined>(
   (storeStore?.listStore[0] as Store) || undefined
 )
@@ -71,6 +74,7 @@ watch(
   () => storeStore.listStore,
   newStores => {
     if (newStores.length) {
+      listStore.value = [...newStores]
       selectedStore.value = newStores[0] as Store
     } else {
       selectedStore.value = undefined
@@ -127,6 +131,23 @@ watch(selectedCollection, async (val: Collection | undefined) => {
       allProductsFetched.value = true
     }
   }
+})
+watch(selectedTags, val => {
+  if (val.length) {
+    listStore.value = storeStore.listStore.filter(store =>
+      store.tags.some(tag => val.some(selectedTag => selectedTag.id === tag.id))
+    )
+  } else {
+    listStore.value = [...storeStore.listStore]
+  }
+  selectedStore.value = undefined
+  selectedCollection.value = undefined
+  allProductsFetched.value = false
+  allCollectionsFetched.value = false
+  collectionPage.value = 1
+  productPage.value = 1
+  storeStore.listCollection = []
+  storeStore.listProduct = []
 })
 
 onMounted(async () => {
