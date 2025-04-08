@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar-container">
     <div class="wrapper">
-      <img src="../../public/images/logoG.png" alt="" class="logo" />
+      <img src="/images/logoG.png" alt="" class="logo" />
       <div class="user-menu">
         <div
           v-tooltip="'Homepage'"

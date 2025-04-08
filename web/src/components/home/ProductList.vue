@@ -7,7 +7,10 @@
       :product="product"
       :platform="props.platform"
     />
-    <div v-if="!props.products.length || !props.platform" class="notice">
+    <div
+      v-if="(!props.products.length || !props.platform) && !appStore.isLoading"
+      class="notice"
+    >
       {{ noticeMessage }}
     </div>
   </div>
@@ -17,6 +20,7 @@ import { computed } from 'vue'
 import type { PropType } from 'vue'
 import type { Product } from '@/services/store/types'
 import ProductCard from './ProductCard.vue'
+import { useAppStore } from '@/stores/app'
 
 defineOptions({
   name: 'ProductList',
@@ -34,6 +38,8 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['loadMoreProducts'])
+
+const appStore = useAppStore()
 
 const noticeMessage = computed(() => {
   if (!props.platform) {
