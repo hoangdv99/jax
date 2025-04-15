@@ -30,6 +30,7 @@ func (app *application) routes() http.Handler {
 
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/users", app.getListUserHandler)
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/current-user", app.getCurrentUserHandler)
+	protectedRouter.HandlerFunc(http.MethodGet, "/v1/user/:id/stores", app.getUserStoresHandler)
 
 	protectedRouter.HandlerFunc(http.MethodPost, "/v1/store", app.addStoreHandler)
 	protectedRouter.HandlerFunc(http.MethodGet, "/v1/stores", app.listStoreHandler)

@@ -21,10 +21,20 @@ function getCurrentUser(token: string) {
   return api('get', `/v1/current-user`, { token })
 }
 
+function getListUser() {
+  return api('get', '/v1/users')
+}
+
+function getUserStores(userId: number) {
+  return api('get', `/v1/user/${userId}/stores`)
+}
+
 export default {
   signup,
   signin,
   resendActivationToken,
   logout,
   getCurrentUser,
+  getListUser,
+  getUserStores,
 }

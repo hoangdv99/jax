@@ -43,10 +43,10 @@ onBeforeMount(async () => {
     if (res.success) {
       const accountStore = useAccountStore()
       accountStore.setCurrentUser(res.data.currentUser)
-      if (accountStore.currentUser.status === USER_STATUS.WAITING_ACTIVATION) {
+      if (accountStore.currentUser.status === USER_STATUS.WAITING_ACTIVATION.value) {
         router.push({ name: 'UserActivation' })
       } else if (
-        accountStore.currentUser.status === USER_STATUS.WAITING_APPROVAL
+        accountStore.currentUser.status === USER_STATUS.WAITING_APPROVAL.value
       ) {
         router.push({ name: 'WaitlistNotification' })
       }

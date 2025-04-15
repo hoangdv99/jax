@@ -143,3 +143,20 @@ func (app *application) getCurrentUserHandler(w http.ResponseWriter, r *http.Req
 		app.serverErrorResponse(w, r, err)
 	}
 }
+
+func (app *application) getUserStoresHandler(w http.ResponseWriter, r *http.Request) {
+	userId, err := app.readIdParam(r)
+	if err != nil {
+		app.notFoundResponse(w, r)
+		return
+	}
+	stores, err := app.models.Stores.List(userId)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = app.writeJSON(w, http.StatusOK, envelop{"data": stores}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
