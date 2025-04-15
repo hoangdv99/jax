@@ -31,6 +31,12 @@ db/migrations/down:
 	@echo 'Rollback the most migration...'
 	migrate -path ./migrations -database="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}" down 1
 
+## db/migrations/force: force a migration to a specific version
+.PHONY: db/migrations/force
+db/migrations/force:
+	@echo 'Force migration to version $(version)...'
+	migrate -path ./migrations -database="mysql://${MYSQL_USERNAME}:${MYSQL_PASSWORD}@tcp(${MYSQL_HOST}:${MYSQL_PORT})/${MYSQL_DATABASE}" force $(version)
+
 # ==================================================================================== # 
 # QUALITY CONTROL
 # ==================================================================================== #

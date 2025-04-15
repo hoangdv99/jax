@@ -28,6 +28,18 @@ func (app *application) addStoreHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	blacklist, err := app.models.Blacklist.GetBlacklist()
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	for _, item := range blacklist {
+		if item.StoreUrl == input.Url {
+			app.badRequestResponse(w, r, errors.New("cannot add this store"))
+			return
+		}
+	}
+
 	platform, err := app.models.Stores.GetStorePlatform(input.Url)
 	if err != nil {
 		app.badRequestResponse(w, r, errors.New("invalid url or unsupported platform"))
