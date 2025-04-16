@@ -59,7 +59,7 @@ func main() {
 	var cfg config
 	cfg.port = getEnvAsInt("PORT", 4000)
 	cfg.env = getEnv("ENVIRONMENT", "development")
-	cfg.db.dsn = fmt.Sprintf("%s:%s@/%s?parseTime=true", os.Getenv("MYSQL_USERNAME"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_DATABASE"))
+	cfg.db.dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", os.Getenv("MYSQL_USERNAME"), os.Getenv("MYSQL_PASSWORD"), os.Getenv("MYSQL_HOST"), os.Getenv("MYSQL_PORT"), os.Getenv("MYSQL_DATABASE"))
 	cfg.db.maxOpenConns = getEnvAsInt("DB_MAX_OPEN_CONNS", 25)
 	cfg.db.maxIdleConns = getEnvAsInt("DB_MAX_IDLE_CONNS", 25)
 	cfg.db.maxIdleTime = getEnv("DB_MAX_IDLE_TIME", "15m")
@@ -139,29 +139,35 @@ func (app *application) serve() error {
 }
 
 func openDB(cfg config) (*sql.DB, error) {
-	db, err := sql.Open("mysql", cfg.db.dsn)
-	if err != nil {
-		return nil, err
+	var db *sql.DB
+	var err error
+
+	for range 5 {
+		db, err = sql.Open("mysql", cfg.db.dsn)
+		if err == nil {
+			db.SetMaxOpenConns(cfg.db.maxOpenConns)
+			db.SetMaxIdleConns(cfg.db.maxIdleConns)
+
+			duration, err := time.ParseDuration(cfg.db.maxIdleTime)
+			if err != nil {
+				return nil, err
+			}
+			db.SetConnMaxIdleTime(duration)
+
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+
+			err = db.PingContext(ctx)
+			if err == nil {
+				return db, nil
+			}
+		}
+
+		log.Printf("Failed to connect to database, retrying in 3 seconds... (%v)", err)
+		time.Sleep(3 * time.Second)
 	}
 
-	db.SetMaxOpenConns(cfg.db.maxOpenConns)
-	db.SetMaxIdleConns(cfg.db.maxIdleConns)
-
-	duration, err := time.ParseDuration(cfg.db.maxIdleTime)
-	if err != nil {
-		return nil, err
-	}
-	db.SetConnMaxIdleTime(duration)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	err = db.PingContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	return db, nil
+	return nil, fmt.Errorf("failed to connect to database after multiple attempts: %v", err)
 }
 
 func initLogger() zerolog.Logger {
