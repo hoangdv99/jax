@@ -69,6 +69,7 @@ watch(() => props.originalStore, (value) => {
 const store = reactive<Store>({
   id: null,
   url: '',
+  platform: '',
   tags: [],
 })
 const showTagDialog = ref(false)
